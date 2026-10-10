@@ -230,7 +230,7 @@ TextWithEntities ReplyText(
 }
 
 bool HiddenPeer(PeerData *peer) {
-	if (!peer || !peer->isBlocked()) {
+	if (!peer) {
 		return false;
 	}
 	const auto raw = ForAccount(&peer->session()).Get(
@@ -238,7 +238,50 @@ bool HiddenPeer(PeerData *peer) {
 	const auto config = raw.isEmpty()
 		? std::nullopt
 		: Serein::Filters::ReadRules(raw);
-	return config && config->enabled && config->hideBlocked;
+	if (!config || !config->enabled) {
+		return false;
+	}
+	if (peer->isBlocked() && config->hideBlocked) {
+		return true;
+	}
+	const auto id = QString::number(SerializePeerId(peer->id));
+	return std::find(
+		config->hiddenAuthors.begin(),
+		config->hiddenAuthors.end(),
+		id) != config->hiddenAuthors.end();
+}
+
+bool HiddenSender(HistoryItem *item) {
+	if (!item || item->isService()) {
+		return false;
+	}
+	const auto raw = ForAccount(&item->history()->session()).Get(
+		Serein::Filters::kRules);
+	const auto config = raw.isEmpty()
+		? std::nullopt
+		: Serein::Filters::ReadRules(raw);
+	if (!config || !config->enabled) {
+		return false;
+	}
+	const auto forwarded = item->Get<HistoryMessageForwarded>();
+	const auto sources = std::array<PeerData*, 3>{
+		item->from().get(),
+		forwarded ? forwarded->originalSender : nullptr,
+		item->viaBot(),
+	};
+	const auto contains = [&](const QString &id) {
+		return std::find(
+			config->hiddenAuthors.begin(),
+			config->hiddenAuthors.end(),
+			id) != config->hiddenAuthors.end();
+	};
+	for (const auto source : sources) {
+		if (source
+			&& contains(QString::number(SerializePeerId(source->id)))) {
+			return true;
+		}
+	}
+	return false;
 }
 
 } // namespace Serein::Hooks::Filters

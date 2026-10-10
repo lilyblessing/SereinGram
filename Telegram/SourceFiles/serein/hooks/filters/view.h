@@ -14,5 +14,6 @@ namespace Serein::Hooks::Filters {
 	HistoryItem *quoted,
 	const TextWithEntities &text);
 [[nodiscard]] bool HiddenPeer(PeerData *peer);
+[[nodiscard]] bool HiddenSender(HistoryItem *item);
 
 } // namespace Serein::Hooks::Filters
