@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_pinned_bar.h"
+#include "serein/hooks/filters/view.h"
 
 #include "api/api_bot.h"
 #include "lang/lang_keys.h"
@@ -125,6 +126,11 @@ QImage PreviewImage::image(int size) {
 [[nodiscard]] rpl::producer<Ui::MessageBarContent> ContentByItem(
 		not_null<HistoryItem*> item,
 		Fn<void()> repaint) {
+	if (Serein::Hooks::Filters::HiddenSender(item)) {
+		return rpl::single(Ui::MessageBarContent{
+			.text = { tr::lng_serein_filter_hidden(tr::now) },
+		});
+	}
 	return item->history()->session().changes().messageFlagsValue(
 		item,
 		Data::MessageUpdate::Flag::Edited
