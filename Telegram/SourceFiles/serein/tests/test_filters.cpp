@@ -220,3 +220,45 @@ TEST_CASE("Filters") {
 		"duplicate rule ids accepted");
 	std::cout << "PASS: Serein filter budgets and projection" << std::endl;
 }
+
+TEST_CASE("FiltersCache") {
+	using namespace Serein::Filters;
+	Require(CachedRules({}).has_value()
+		&& CachedRules({})->rules.empty()
+		&& !CachedRules({})->enabled,
+		"empty cached config rejected");
+	const auto rawA = Config(Rule(u"foo"_q, u"replace"_q));
+	const auto rawB = Config(Rule(u"bar"_q, u"replace"_q));
+	const auto a = CachedRules(rawA);
+	Require(a && a->rules.size() == 1 && a->rules[0].pattern == u"foo"_q,
+		"cached parse of the first config failed");
+	const auto b = CachedRules(rawB);
+	Require(b && b->rules.size() == 1 && b->rules[0].pattern == u"bar"_q,
+		"cached parse of the second config failed");
+	const auto a2 = CachedRules(rawA);
+	Require(a2 && a2->rules[0].pattern == u"foo"_q,
+		"cache cross-contaminated configs");
+	Require(Apply(rawA, { u"foo"_q }, {}, {}, false, false).text.text
+			== u"bar"_q,
+		"cached config did not apply");
+	const auto distinct = [](int index) {
+		auto rule = Rule(u"foo"_q, u"replace"_q);
+		rule.insert(u"title"_q, QString::number(index));
+		return Config(rule);
+	};
+	auto cachedClock = QElapsedTimer();
+	cachedClock.start();
+	for (auto i = 0; i != 200; ++i) {
+		Require(CachedRules(rawA).has_value(), "cached lookup failed");
+	}
+	const auto cachedMs = cachedClock.elapsed();
+	auto freshClock = QElapsedTimer();
+	freshClock.start();
+	for (auto i = 0; i != 200; ++i) {
+		Require(CachedRules(distinct(i)).has_value(), "fresh parse failed");
+	}
+	const auto freshMs = freshClock.elapsed();
+	Require(cachedMs < freshMs,
+		"cached parses were not faster than fresh parses");
+	std::cout << "PASS: Serein filter rules cache" << std::endl;
+}

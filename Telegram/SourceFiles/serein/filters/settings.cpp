@@ -3,12 +3,17 @@
 #include "serein/filters/model.h"
 #include "serein/filters/subscription.h"
 
+#include "data/data_peer.h"
+#include "data/data_peer_id.h"
+#include "data/data_session.h"
+#include "info/profile/info_profile_values.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 
 #include "serein/core/options.h"
 
 #include "ui/boxes/confirm_box.h"
+#include "ui/controls/userpic_button.h"
 #include "ui/layers/generic_box.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
@@ -22,6 +27,7 @@
 #include <QtWidgets/QApplication>
 
 #include "styles/style_layers.h"
+#include "styles/style_serein.h"
 #include "styles/style_settings.h"
 
 #include <algorithm>
@@ -37,7 +43,7 @@ using IdList = std::vector<QString> FilterRules::*;
 
 [[nodiscard]] std::optional<FilterRules> ReadFilters(
 		not_null<Main::Session*> session) {
-	return ReadRules(ForAccount(session).Get(kRules));
+	return ReadRulesFor(session);
 }
 
 [[nodiscard]] std::vector<QString> ParsePeers(const QString &text) {
@@ -260,8 +266,34 @@ void PeerListBox(
 	});
 	const auto &list = current.*member;
 	for (auto index = 0; index != int(list.size()); ++index) {
+		const auto key = list[index];
+		auto ok = false;
+		const auto id = DeserializePeerId(key.toULongLong(&ok));
+		const auto peer = (ok
+			&& id
+			&& (peerIsUser(id) || peerIsChat(id) || peerIsChannel(id))
+			&& peerToBareMTPInt(id).v > 0
+			&& QString::number(SerializePeerId(id)) == key)
+			? session->data().peerLoaded(id)
+			: nullptr;
 		const auto row = box->addRow(object_ptr<Ui::SettingsButton>(
-			box, rpl::single(list[index]), st::settingsButtonNoIcon));
+			box,
+			peer
+				? Info::Profile::NameValue(peer)
+				: rpl::single(key),
+			peer ? st::settingsButton : st::settingsButtonNoIcon));
+		if (peer) {
+			const auto avatar = Ui::CreateChild<Ui::UserpicButton>(
+				row,
+				peer,
+				st::sereinFilterPeerUserpic);
+			avatar->setAttribute(Qt::WA_TransparentForMouseEvents);
+			row->sizeValue() | rpl::on_next([=](QSize size) {
+				avatar->moveToLeft(
+					st::sereinFilterPeerUserpicLeft,
+					(size.height() - avatar->height()) / 2);
+			}, avatar->lifetime());
+		}
 		row->setClickedCallback([=] {
 			auto updated = current;
 			auto &values = updated.*member;

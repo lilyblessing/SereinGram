@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <map>
+#include <mutex>
 
 namespace Serein::Filters {
 namespace {
@@ -137,6 +138,34 @@ std::optional<FilterRules> ReadRules(const QByteArray &raw) {
 	return raw.isEmpty() ? FilterRules() : ParseFilterRules(Upgraded(raw));
 }
 
+std::optional<FilterRules> CachedRules(const QByteArray &raw) {
+	if (raw.isEmpty()) {
+		return FilterRules();
+	}
+	constexpr auto kMaxCachedRules = 4;
+	static std::mutex mutex;
+	static std::map<QByteArray, std::optional<FilterRules>> cache;
+	{
+		const auto lock = std::lock_guard(mutex);
+		if (const auto i = cache.find(raw); i != cache.end()) {
+			return i->second;
+		}
+	}
+	auto parsed = ParseFilterRules(Upgraded(raw));
+	const auto lock = std::lock_guard(mutex);
+	if (cache.find(raw) == cache.end()) {
+		while (cache.size() >= kMaxCachedRules) {
+			cache.erase(cache.begin());
+		}
+		cache.emplace(raw, parsed);
+	}
+	return parsed;
+}
+
+std::optional<FilterRules> ReadRulesFor(not_null<Main::Session*> session) {
+	return CachedRules(ForAccount(session).Get(kRules));
+}
+
 std::optional<std::vector<FilterRule>> ReadRuleList(const QByteArray &raw) {
 	if (raw.size() > kMaxConfigBytes) {
 		return std::nullopt;
@@ -179,7 +208,7 @@ bool ValidFilterRules(const FilterRules &value) {
 }
 
 bool Validate(const QByteArray &raw) {
-	return ReadRules(raw).has_value();
+	return CachedRules(raw).has_value();
 }
 
 bool ValidRuleList(const QByteArray &raw) {
@@ -200,7 +229,7 @@ Result Apply(
 	if (raw.isEmpty()) {
 		return result;
 	}
-	const auto config = ReadRules(raw);
+	const auto config = CachedRules(raw);
 	if (!config) {
 		result.error = u"invalid filter configuration"_q;
 		return result;

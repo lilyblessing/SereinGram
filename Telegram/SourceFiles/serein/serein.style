@@ -25,6 +25,13 @@ sereinSettingsAbout: FlatLabel(settingsExperimentalAbout) {
 sereinSettingsAboutPadding: margins(60px, 0px, 22px, 11px);
 sereinSettingsAboutPlainPadding: margins(22px, 0px, 22px, 10px);
 
+sereinFilterPeerUserpic: UserpicButton(defaultUserpicButton) {
+	size: size(40px, 40px);
+	photoSize: 40px;
+	photoPosition: point(0px, 0px);
+}
+sereinFilterPeerUserpicLeft: 10px;
+
 sereinInspectorWidth: 480px;
 sereinInspectorTextPadding: margins(22px, 4px, 22px, 8px);
 sereinInspectorRaw: FlatLabel(defaultFlatLabel) {

@@ -101,7 +101,7 @@ QString Searchable(not_null<HistoryItem*> item) {
 	if (raw.isEmpty()) {
 		return { .text = source };
 	}
-	const auto config = ReadRules(raw);
+	const auto config = CachedRules(raw);
 	const auto shared = ForDevice().Get(kSubscribedRules);
 	const auto forwarded = item->Get<HistoryMessageForwarded>();
 	const auto sources = std::array<PeerData*, 3>{
@@ -237,7 +237,7 @@ bool HiddenPeer(PeerData *peer) {
 		Serein::Filters::kRules);
 	const auto config = raw.isEmpty()
 		? std::nullopt
-		: Serein::Filters::ReadRules(raw);
+		: Serein::Filters::CachedRules(raw);
 	if (!config || !config->enabled) {
 		return false;
 	}
@@ -259,7 +259,7 @@ bool HiddenSender(HistoryItem *item) {
 		Serein::Filters::kRules);
 	const auto config = raw.isEmpty()
 		? std::nullopt
-		: Serein::Filters::ReadRules(raw);
+		: Serein::Filters::CachedRules(raw);
 	if (!config || !config->enabled) {
 		return false;
 	}
