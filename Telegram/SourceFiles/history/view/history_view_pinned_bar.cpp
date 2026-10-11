@@ -39,7 +39,7 @@ namespace {
 		not_null<HistoryItem*> item,
 		Fn<void()> repaint) {
 	return Ui::MessageBarContent{
-		.text = item->inReplyText(),
+		.text = Serein::Hooks::Filters::DisplayText(item, item->inReplyText()),
 		.context = Core::TextContext({
 			.session = &item->history()->session(),
 			.repaint = std::move(repaint),
@@ -126,7 +126,8 @@ QImage PreviewImage::image(int size) {
 [[nodiscard]] rpl::producer<Ui::MessageBarContent> ContentByItem(
 		not_null<HistoryItem*> item,
 		Fn<void()> repaint) {
-	if (Serein::Hooks::Filters::HiddenSender(item)) {
+	if (Serein::Hooks::Filters::HiddenSender(item)
+		|| Serein::Hooks::Filters::Hidden(item)) {
 		return rpl::single(Ui::MessageBarContent{
 			.text = { tr::lng_serein_filter_hidden(tr::now) },
 		});
