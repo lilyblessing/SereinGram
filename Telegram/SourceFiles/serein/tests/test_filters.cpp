@@ -211,6 +211,16 @@ TEST_CASE("Filters") {
 		{ u"foo"_q }, {}, {}, false, false);
 	Require(removed.hidden && removed.removed && removed.text.text == u"foo"_q,
 		"remove action did not remove locally");
+	// True whole-element removal (Element::isHidden lever) relies on the
+	// invariant removed => hidden: the view only consults the remove flag
+	// inside the hidden branch.
+	Require(removed.hidden && removed.removed,
+		"remove result not flagged for whole-element removal");
+	const auto searchableRemoved = Apply(Config(Rule(u"boom"_q, u"remove"_q)),
+		{ u"harmless body"_q }, {}, {}, false, false, u"\nboom"_q);
+	Require(searchableRemoved.hidden && searchableRemoved.removed
+		&& searchableRemoved.text.text == u"harmless body"_q,
+		"remove via searchable did not flag whole-message removal");
 	auto reversedRemove = Rule(u"foo"_q, u"remove"_q);
 	reversedRemove.insert(u"reversed"_q, true);
 	Require(withRule(reversedRemove), "reversed remove rule rejected");

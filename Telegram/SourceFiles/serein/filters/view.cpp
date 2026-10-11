@@ -210,6 +210,13 @@ bool Hidden(HistoryItem *item) {
 			item->translatedTextWithLocalEntities()).hidden);
 }
 
+bool Removed(HistoryItem *item) {
+	return item
+		&& Serein::Filters::Project(
+			item,
+			item->translatedTextWithLocalEntities()).removed;
+}
+
 TextWithEntities DisplayText(
 		HistoryItem *item,
 		const TextWithEntities &source) {
