@@ -49,7 +49,8 @@ message FilterRule {
     in: [
       "mask",
       "replace",
-      "hide"
+      "hide",
+      "remove"
     ]
   }];
   // Serialized peer ids or peer:topic pairs the rule is limited to; empty applies everywhere.

@@ -17,6 +17,7 @@ namespace Serein::Filters {
 struct Result {
 	TextWithEntities text;
 	bool hidden = false;
+	bool removed = false;
 	QString error;
 	int matches = 0;
 };

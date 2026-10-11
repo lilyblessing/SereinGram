@@ -688,6 +688,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_serein_ prefix.
 "lng_serein_filter_excluded_chats" = "Excluded chats";
 "lng_serein_filter_add_id" = "Add peer ID";
 "lng_serein_filter_id_help" = "Enter a numeric peer ID to add it. Select an existing ID to remove it.";
+"lng_serein_filter_id_help_remove" = "Authors can be added from a message menu. Select an entry in the list to remove it.";
 "lng_serein_rules" = "Rules";
 "lng_serein_filter_hidden" = "Message hidden by a local filter";
 "lng_serein_filter_show_in_chat" = "Show filtered messages";
@@ -718,6 +719,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_serein_ prefix.
 "lng_serein_filter_replace" = "Replace matching text";
 "lng_serein_filter_mask_message" = "Mask the whole message";
 "lng_serein_filter_hide" = "Hide content with a placeholder";
+"lng_serein_filter_remove" = "Remove the whole message";
 "lng_serein_filter_enabled" = "Enable local filters";
 "lng_serein_filter_outgoing" = "Filter outgoing messages";
 "lng_serein_filter_blocked" = "Hide blocked authors";
@@ -732,6 +734,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_serein_ prefix.
 "lng_serein_filter_chat_enable" = "Apply local filters in this chat";
 "lng_serein_filter_chat_disable" = "Exclude this chat from local filters";
 "lng_serein_filter_menu_saved" = "Filter preference saved for this account. The master switch is in SereinGram → Local message filters.";
+"lng_serein_filter_selection_add" = "Add selected text to filter rules";
+"lng_serein_filter_rules_limit" = "Rule limit reached. Delete an existing rule first.";
+"lng_serein_filter_pattern_long" = "The selected text is too long for a filter rule.";
 "lng_serein_link_rules" = "Link rules";
 "lng_serein_keyword_alerts" = "Keyword alerts";
 "lng_serein_keyword_alerts_enable" = "Notify about matching messages";

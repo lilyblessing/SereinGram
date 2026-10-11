@@ -191,9 +191,11 @@ QString Searchable(not_null<HistoryItem*> item) {
 }
 
 [[nodiscard]] TextWithEntities DisplayText(const Result &result) {
-	return result.hidden
-		? TextWithEntities{ tr::lng_serein_filter_hidden(tr::now) }
-		: result.text;
+	if (!result.hidden) {
+		return result.text;
+	}
+	// "remove" shows no placeholder: the body collapses to a blank line.
+	return { result.removed ? u" "_q : tr::lng_serein_filter_hidden(tr::now) };
 }
 
 } // namespace

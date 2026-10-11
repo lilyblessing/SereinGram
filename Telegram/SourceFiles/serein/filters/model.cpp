@@ -194,7 +194,8 @@ bool ValidFilterRules(const FilterRules &value) {
 			|| !ValidText(rule.title, 128, false)
 			|| !ValidText(rule.pattern, 2048, false)
 			|| !ValidText(rule.replacement, 4096, true)
-			|| (rule.reversed && rule.action != u"hide"_q)
+			|| (rule.reversed && rule.action != u"hide"_q
+				&& rule.action != u"remove"_q)
 			|| !SafePattern(rule.pattern, rule.caseInsensitive).isValid()) {
 			return false;
 		}
@@ -273,7 +274,9 @@ Result Apply(
 			rule.pattern,
 			rule.caseInsensitive);
 		const auto &action = rule.action;
-		const auto text = action == u"hide" && !searchable.isNull()
+		const auto wholeMessage = action == u"hide"_q
+			|| action == u"remove"_q;
+		const auto text = wholeMessage && !searchable.isNull()
 			? searchable : result.text.text;
 		auto edits = std::vector<Edit>();
 		auto matched = false;
@@ -295,7 +298,7 @@ Result Apply(
 				break;
 			}
 			matched = true;
-			if (action == u"hide"_q) {
+			if (wholeMessage) {
 				break;
 			}
 			const auto start = int(match.capturedStart());
@@ -311,9 +314,10 @@ Result Apply(
 		if (!result.error.isEmpty()) {
 			break;
 		}
-		if (action == u"hide"_q) {
+		if (wholeMessage) {
 			if (matched != rule.reversed) {
 				result.hidden = true;
+				result.removed = (action == u"remove"_q);
 				return result;
 			}
 		} else if (!ApplyEdits(result.text, edits)) {

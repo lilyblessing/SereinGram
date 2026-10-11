@@ -4,6 +4,7 @@
 #include "serein/hooks/menu/action_id.h"
 #include "serein/hooks/menu/selection.h"
 
+#include <QString>
 #include <vector>
 
 class HistoryItem;
@@ -27,6 +28,7 @@ void Apply(
 	HistoryItem *item,
 	Window::SessionController *controller,
 	std::vector<FullMsgId> selected,
-	SelectionTarget selection);
+	SelectionTarget selection,
+	QString selectedText = QString());
 
 } // namespace Serein::Menu

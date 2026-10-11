@@ -5,6 +5,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
+#include <QtCore/QRegularExpression>
 
 #include <iostream>
 
@@ -153,6 +154,15 @@ TEST_CASE("Filters") {
 	const auto hidden = Apply(Config(Rule(u"foo"_q, u"hide"_q)),
 		{ u"foo"_q }, {}, {}, false, false);
 	Require(hidden.hidden, "hide action did not hide locally");
+	const auto escapedPattern = QRegularExpression::escape(u"a.b"_q);
+	const auto escapedRaw = Config(Rule(escapedPattern, u"hide"_q));
+	const auto dotMatch = Apply(escapedRaw,
+		{ u"a.b"_q }, {}, {}, false, false);
+	Require(dotMatch.hidden, "escaped selection did not match itself");
+	const auto notMatch = Apply(escapedRaw,
+		{ u"axb"_q }, {}, {}, false, false);
+	Require(!notMatch.hidden && notMatch.text.text == u"axb"_q,
+		"escaped selection matched a different character");
 	Require(!Validate(Config(Rule(u"("_q, u"hide"_q))),
 		"invalid regex accepted");
 	const auto excessive = Apply(Config(Rule(u"a"_q, u"replace"_q)),
@@ -195,6 +205,23 @@ TEST_CASE("Filters") {
 	auto reversedHide = Rule(u"foo"_q, u"hide"_q);
 	reversedHide.insert(u"reversed"_q, true);
 	Require(withRule(reversedHide), "reversed hide rule rejected");
+	Require(Validate(Config(Rule(u"foo"_q, u"remove"_q))),
+		"remove action rejected");
+	const auto removed = Apply(Config(Rule(u"foo"_q, u"remove"_q)),
+		{ u"foo"_q }, {}, {}, false, false);
+	Require(removed.hidden && removed.removed && removed.text.text == u"foo"_q,
+		"remove action did not remove locally");
+	auto reversedRemove = Rule(u"foo"_q, u"remove"_q);
+	reversedRemove.insert(u"reversed"_q, true);
+	Require(withRule(reversedRemove), "reversed remove rule rejected");
+	const auto kept = Apply(Config(reversedRemove),
+		{ u"foo"_q }, {}, {}, false, false);
+	Require(!kept.hidden && !kept.removed,
+		"reversed remove hid the matching message");
+	const auto stripped = Apply(Config(reversedRemove),
+		{ u"spam"_q }, {}, {}, false, false);
+	Require(stripped.hidden && stripped.removed,
+		"reversed remove kept a non-matching message");
 	Require(!withField(u"pattern"_q, u"("_q), "invalid regex accepted");
 	Require(!withField(u"id"_q, u"00000000-0000-0000-0000-00000000000A"_q),
 		"uppercase rule id accepted");

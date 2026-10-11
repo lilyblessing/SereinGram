@@ -71,7 +71,7 @@ bool Validate(
 	if (!(Codec::Matches(value.id, QString::fromUtf8("^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$")))) {
 		return Codec::Fail(error, Codec::Child(path, QLatin1StringView("id")), QString::fromLatin1("violates the schema rules"));
 	}
-	if (!((value.action == QString::fromUtf8("mask") || value.action == QString::fromUtf8("replace") || value.action == QString::fromUtf8("hide")))) {
+	if (!((value.action == QString::fromUtf8("mask") || value.action == QString::fromUtf8("replace") || value.action == QString::fromUtf8("hide") || value.action == QString::fromUtf8("remove")))) {
 		return Codec::Fail(error, Codec::Child(path, QLatin1StringView("action")), QString::fromLatin1("violates the schema rules"));
 	}
 	if (!(qsizetype(value.peers.size()) <= 100)) {

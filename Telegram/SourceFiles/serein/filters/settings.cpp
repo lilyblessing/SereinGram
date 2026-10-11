@@ -106,7 +106,9 @@ void PreviewBox(not_null<Ui::GenericBox*> box, FilterRules config) {
 			ReadRuleList(ForDevice().Get(kSubscribedRules)).value_or(
 				std::vector<FilterRule>()));
 		result->setText(!value.error.isEmpty() ? value.error
-			: value.hidden ? tr::lng_serein_filter_hidden(tr::now)
+			: (value.hidden && !value.removed)
+				? tr::lng_serein_filter_hidden(tr::now)
+			: value.hidden ? u" "_q
 			: value.text.text);
 	};
 	input->changes() | rpl::on_next(preview, input->lifetime());
@@ -165,13 +167,14 @@ void RuleBox(
 		toggles.push_back(box->addRow(object_ptr<Ui::Checkbox>(
 			box, label, original.*member)));
 	}
-	const auto actions = QStringList{ u"mask"_q, u"replace"_q, u"hide"_q };
+	const auto actions = QStringList{ u"mask"_q, u"replace"_q, u"hide"_q, u"remove"_q };
 	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
 		std::max(int(actions.indexOf(original.action)), 0));
 	const auto labels = std::array{
 		tr::lng_serein_filter_mask(tr::now),
 		tr::lng_serein_filter_replace(tr::now),
 		tr::lng_serein_filter_hide(tr::now),
+		tr::lng_serein_filter_remove(tr::now),
 	};
 	for (auto i = 0; i != int(labels.size()); ++i) {
 		box->addRow(object_ptr<Ui::Radiobutton>(box, group, i, labels[i]));
@@ -246,24 +249,29 @@ void PeerListBox(
 	box->setTitle((member == &FilterRules::hiddenAuthors)
 		? tr::lng_serein_filter_hidden_authors()
 		: tr::lng_serein_filter_excluded_chats());
+	const auto forAuthors = (member == &FilterRules::hiddenAuthors);
 	box->addRow(object_ptr<Ui::FlatLabel>(box,
-		tr::lng_serein_filter_id_help(), st::boxLabel));
-	const auto input = box->addRow(object_ptr<Ui::InputField>(
-		box, st::defaultInputField, Ui::InputField::Mode::SingleLine,
-		tr::lng_serein_filter_add_id()));
-	input->setMaxLength(20);
-	box->addButton(tr::lng_serein_filter_add(), [=] {
-		const auto id = input->getLastText().trimmed();
-		auto updated = current;
-		auto &list = updated.*member;
-		if (std::find(list.begin(), list.end(), id) == list.end()) {
-			list.push_back(id);
-		}
-		if (Save(box, session, current, updated)) {
-			Saved(session, changed);
-			box->closeBox();
-		}
-	});
+		forAuthors
+			? tr::lng_serein_filter_id_help_remove()
+			: tr::lng_serein_filter_id_help(), st::boxLabel));
+	if (!forAuthors) {
+		const auto input = box->addRow(object_ptr<Ui::InputField>(
+			box, st::defaultInputField, Ui::InputField::Mode::SingleLine,
+			tr::lng_serein_filter_add_id()));
+		input->setMaxLength(20);
+		box->addButton(tr::lng_serein_filter_add(), [=] {
+			const auto id = input->getLastText().trimmed();
+			auto updated = current;
+			auto &list = updated.*member;
+			if (std::find(list.begin(), list.end(), id) == list.end()) {
+				list.push_back(id);
+			}
+			if (Save(box, session, current, updated)) {
+				Saved(session, changed);
+				box->closeBox();
+			}
+		});
+	}
 	const auto &list = current.*member;
 	for (auto index = 0; index != int(list.size()); ++index) {
 		const auto key = list[index];

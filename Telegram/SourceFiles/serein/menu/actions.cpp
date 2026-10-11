@@ -107,6 +107,7 @@ void Apply(
 			.controller = controller,
 			.selected = selected,
 			.selection = selection,
+			.selectedText = selectedText,
 		});
 	}
 	const auto config = ForDevice().Get(kMenuConfig);
