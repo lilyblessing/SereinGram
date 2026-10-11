@@ -98,7 +98,8 @@ void Apply(
 		HistoryItem *item,
 		Window::SessionController *controller,
 		MessageIdsList selected,
-		SelectionTarget selection) {
+		SelectionTarget selection,
+		QString selectedText) {
 	Expects(menu != nullptr);
 	if (controller) {
 		Contribute({

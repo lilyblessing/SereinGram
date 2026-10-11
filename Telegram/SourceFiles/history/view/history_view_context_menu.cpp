@@ -2025,7 +2025,7 @@ base::unique_qptr<Ui::PopupMenu> FillContextMenu(
 		list->controller(),
 		(request.pointState != PointState::Outside && request.overSelection)
 			? ExtractIdsList(request.selectedItems) : MessageIdsList(),
-		Serein::Menu::SelectionTarget(list), request.selectedText.text);
+		Serein::Menu::SelectionTarget(list), request.selectedText.rich.text);
 	return result;
 }
 
