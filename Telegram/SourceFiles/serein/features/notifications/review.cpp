@@ -73,6 +73,9 @@ std::optional<bool> ReviewNotification(
 	if (message && Serein::Hooks::Filters::HiddenSender(item)) {
 		return false;
 	}
+	if (Serein::Hooks::Filters::Hidden(item)) {
+		return false;
+	}
 	const auto keywordMatch = KeywordMatch(item, message);
 	if (Quiet(item, message, keywordMatch)) {
 		return false;

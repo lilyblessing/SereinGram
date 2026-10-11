@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "serein/hooks/messages/double_click.h"
 #include "serein/hooks/media/force_preview.h"
 #include "serein/hooks/gen/privacy.h"
+#include "serein/hooks/filters/view.h"
 #include "serein/hooks/menu/actions.h"
 #include "serein/hooks/menu/selection.h"
 #include "serein/hooks/online.h"
@@ -3686,11 +3687,13 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 						&& (view->hasVisibleText() || mediaHasTextForCopy)) {
 						const auto peer = item->history()->peer;
 						const auto itemId = item->id;
-						const auto translate = mediaHasTextForCopy
-							? (HistoryView::TransribedText(item)
-								.append('\n')
-								.append(item->originalText()))
-							: item->originalText();
+						const auto translate = Serein::Hooks::Filters::DisplayText(
+							item,
+							mediaHasTextForCopy
+								? (HistoryView::TransribedText(item)
+									.append('\n')
+									.append(item->originalText()))
+								: item->originalText());
 						if (!translate.text.isEmpty()
 							&& !Ui::SkipTranslate(translate)) {
 							_menu->addAction(tr::lng_context_translate(tr::now), [=] {

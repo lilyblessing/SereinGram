@@ -34,6 +34,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "mainwindow.h"
 #include "mainwidget.h"
 #include "core/application.h"
+#include "serein/hooks/filters/view.h"
 #include "apiwrap.h"
 #include "api/api_chat_participants.h"
 #include "api/api_attached_stickers.h"
@@ -2298,7 +2299,9 @@ void InnerWidget::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 							Ui::TranslateBox,
 							peer,
 							MsgId(),
-							item->originalText(),
+							Serein::Hooks::Filters::DisplayText(
+								item,
+								item->originalText()),
 							false));
 					}, &st::menuIconTranslate);
 				}

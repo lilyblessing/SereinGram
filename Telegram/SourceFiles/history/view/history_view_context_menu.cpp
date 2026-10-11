@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_context_menu.h"
+#include "serein/hooks/filters/view.h"
 #include "serein/hooks/menu/actions.h"
 #include "serein/hooks/menu/selection.h"
 
@@ -1917,11 +1918,13 @@ void FillContextMenuItems(
 				}, &st::menuIconCopy);
 			}
 
-			const auto translate = mediaHasTextForCopy
-				? (HistoryView::TransribedText(item)
-					.append('\n')
-					.append(item->originalText()))
-				: item->originalText();
+			const auto translate = Serein::Hooks::Filters::DisplayText(
+				item,
+				mediaHasTextForCopy
+					? (HistoryView::TransribedText(item)
+						.append('\n')
+						.append(item->originalText()))
+					: item->originalText());
 			if ((!item->translation() || !item->history()->translatedTo())
 				&& !translate.text.isEmpty()
 				&& !Ui::SkipTranslate(translate)) {

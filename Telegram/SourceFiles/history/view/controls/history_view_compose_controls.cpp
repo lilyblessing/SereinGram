@@ -91,6 +91,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "serein/hooks/compose/inline_bot.h"
 #include "serein/hooks/gen/compose.h"
 #include "serein/hooks/compose/placeholder.h"
+#include "serein/hooks/filters/view.h"
 #include "history/view/controls/history_view_voice_record_bar.h"
 #include "history/view/controls/history_view_webpage_processor.h"
 #include "history/view/history_view_reply.h"
@@ -594,9 +595,13 @@ void FieldHeader::updateShownMessageText() {
 	const auto reply = displayedReplyingToMessage();
 	_shownMessageText.setMarkedText(
 		st::messageTextStyle,
-		((isEditingMessage() || reply.quote.empty())
+		(isEditingMessage()
 			? _shownMessage->inReplyText()
-			: reply.quote),
+			: (reply.quote.empty()
+				? Serein::Hooks::Filters::ReplyText(
+					_shownMessage,
+					_shownMessage->inReplyText())
+				: reply.quote)),
 		Ui::DialogTextOptions(),
 		context);
 }
