@@ -162,10 +162,6 @@ std::optional<FilterRules> CachedRules(const QByteArray &raw) {
 	return parsed;
 }
 
-std::optional<FilterRules> ReadRulesFor(not_null<Main::Session*> session) {
-	return CachedRules(ForAccount(session).Get(kRules));
-}
-
 std::optional<std::vector<FilterRule>> ReadRuleList(const QByteArray &raw) {
 	if (raw.size() > kMaxConfigBytes) {
 		return std::nullopt;

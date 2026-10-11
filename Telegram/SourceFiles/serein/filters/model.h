@@ -23,8 +23,6 @@ struct Result {
 
 [[nodiscard]] std::optional<FilterRules> ReadRules(const QByteArray &raw);
 [[nodiscard]] std::optional<FilterRules> CachedRules(const QByteArray &raw);
-[[nodiscard]] std::optional<FilterRules> ReadRulesFor(
-	not_null<Main::Session*> session);
 [[nodiscard]] std::optional<std::vector<FilterRule>> ReadRuleList(
 	const QByteArray &raw);
 [[nodiscard]] QByteArray WriteRuleList(std::vector<FilterRule> rules);

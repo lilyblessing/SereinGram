@@ -43,7 +43,7 @@ using IdList = std::vector<QString> FilterRules::*;
 
 [[nodiscard]] std::optional<FilterRules> ReadFilters(
 		not_null<Main::Session*> session) {
-	return ReadRulesFor(session);
+	return ReadRules(ForAccount(session).Get(kRules));
 }
 
 [[nodiscard]] std::vector<QString> ParsePeers(const QString &text) {
