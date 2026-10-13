@@ -112,10 +112,10 @@ std::vector<Edit> ZalgoEdits(const QString &text) {
 	return edits;
 }
 
-[[nodiscard]] QByteArray Upgraded(const QByteArray &raw) {
+[[nodiscard]] QByteArray Upgraded(const QByteArray &raw, int target) {
 	auto root = QJsonDocument::fromJson(raw).object();
 	const auto version = root.value(u"version"_q).toInt();
-	if (version != 1 && version != 2) {
+	if (version <= 0 || version >= target) {
 		return raw;
 	}
 	if (version == 1) {
@@ -131,23 +131,25 @@ std::vector<Edit> ZalgoEdits(const QString &text) {
 			root.insert(u"rules"_q, rules);
 		}
 	}
-	const auto addMissing = [&](const QString &key, const QJsonValue &value) {
-		if (!root.contains(key)) {
-			root.insert(key, value);
-		}
-	};
-	addMissing(u"hideBlockedAction"_q, u"hide"_q);
-	addMissing(u"hiddenAuthorsAction"_q, u"hide"_q);
-	addMissing(u"hideBlockedReplacement"_q, QString());
-	addMissing(u"hiddenAuthorsReplacement"_q, QString());
-	root.insert(u"version"_q, 3);
+	if (target >= 3) {
+		const auto addMissing = [&](const QString &key, const QJsonValue &value) {
+			if (!root.contains(key)) {
+				root.insert(key, value);
+			}
+		};
+		addMissing(u"hideBlockedAction"_q, u"hide"_q);
+		addMissing(u"hiddenAuthorsAction"_q, u"hide"_q);
+		addMissing(u"hideBlockedReplacement"_q, QString());
+		addMissing(u"hiddenAuthorsReplacement"_q, QString());
+	}
+	root.insert(u"version"_q, target);
 	return QJsonDocument(root).toJson(QJsonDocument::Compact);
 }
 
 } // namespace
 
 std::optional<FilterRules> ReadRules(const QByteArray &raw) {
-	return raw.isEmpty() ? FilterRules() : ParseFilterRules(Upgraded(raw));
+	return raw.isEmpty() ? FilterRules() : ParseFilterRules(Upgraded(raw, 3));
 }
 
 std::optional<FilterRules> CachedRules(const QByteArray &raw) {
@@ -163,7 +165,7 @@ std::optional<FilterRules> CachedRules(const QByteArray &raw) {
 			return i->second;
 		}
 	}
-	auto parsed = ParseFilterRules(Upgraded(raw));
+	auto parsed = ParseFilterRules(Upgraded(raw, 3));
 	const auto lock = std::lock_guard(mutex);
 	if (cache.find(raw) == cache.end()) {
 		while (cache.size() >= kMaxCachedRules) {
@@ -178,7 +180,7 @@ std::optional<std::vector<FilterRule>> ReadRuleList(const QByteArray &raw) {
 	if (raw.size() > kMaxConfigBytes) {
 		return std::nullopt;
 	}
-	const auto list = ParseFilterRuleList(Upgraded(raw));
+	const auto list = ParseFilterRuleList(Upgraded(raw, 2));
 	if (!list) {
 		return std::nullopt;
 	}
