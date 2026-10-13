@@ -35,11 +35,23 @@ message FilterRules {
   repeated FilterRule rules = 7 [(buf.validate.field).repeated.max_items = 32];
   // Action for blocked ("blacklist") senders; empty means "hide".
   string hide_blocked_action = 8 [(buf.validate.field).string = {
-    in: ["", "mask", "replace", "hide", "remove"]
+    in: [
+      "",
+      "mask",
+      "replace",
+      "hide",
+      "remove"
+    ]
   }];
   // Action for locally hidden authors; empty means "hide".
   string hidden_authors_action = 9 [(buf.validate.field).string = {
-    in: ["", "mask", "replace", "hide", "remove"]
+    in: [
+      "",
+      "mask",
+      "replace",
+      "hide",
+      "remove"
+    ]
   }];
   string hide_blocked_replacement = 10;
   string hidden_authors_replacement = 11;
