@@ -142,6 +142,14 @@ std::vector<Edit> ZalgoEdits(const QString &text) {
 		addMissing(u"hideBlockedReplacement"_q, QString());
 		addMissing(u"hiddenAuthorsReplacement"_q, QString());
 	}
+	if (target >= 4) {
+		const auto addMissing = [&](const QString &key, const QJsonValue &value) {
+			if (!root.contains(key)) {
+				root.insert(key, value);
+			}
+		};
+		addMissing(u"hiddenPlaceholder"_q, QString());
+	}
 	root.insert(u"version"_q, target);
 	return QJsonDocument(root).toJson(QJsonDocument::Compact);
 }
@@ -149,7 +157,7 @@ std::vector<Edit> ZalgoEdits(const QString &text) {
 } // namespace
 
 std::optional<FilterRules> ReadRules(const QByteArray &raw) {
-	return raw.isEmpty() ? FilterRules() : ParseFilterRules(Upgraded(raw, 3));
+	return raw.isEmpty() ? FilterRules() : ParseFilterRules(Upgraded(raw, 4));
 }
 
 std::optional<FilterRules> CachedRules(const QByteArray &raw) {
@@ -165,7 +173,7 @@ std::optional<FilterRules> CachedRules(const QByteArray &raw) {
 			return i->second;
 		}
 	}
-	auto parsed = ParseFilterRules(Upgraded(raw, 3));
+	auto parsed = ParseFilterRules(Upgraded(raw, 4));
 	const auto lock = std::lock_guard(mutex);
 	if (cache.find(raw) == cache.end()) {
 		while (cache.size() >= kMaxCachedRules) {
@@ -245,6 +253,7 @@ Result Apply(
 		result.error = u"invalid filter configuration"_q;
 		return result;
 	}
+	result.placeholder = config->hiddenPlaceholder;
 	const auto contains = [](const std::vector<QString> &list, const QString &id) {
 		return std::find(list.begin(), list.end(), id) != list.end();
 	};

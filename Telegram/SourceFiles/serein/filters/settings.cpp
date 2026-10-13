@@ -105,11 +105,9 @@ void PreviewBox(not_null<Ui::GenericBox*> box, FilterRules config) {
 			text, QString(), QString(), false, false, text.text,
 			ReadRuleList(ForDevice().Get(kSubscribedRules)).value_or(
 				std::vector<FilterRule>()));
-		result->setText(!value.error.isEmpty() ? value.error
-			: (value.hidden && !value.removed)
-				? tr::lng_serein_filter_hidden(tr::now)
-			: value.hidden ? u" "_q
-			: value.text.text);
+		result->setText(!value.error.isEmpty()
+			? value.error
+			: Serein::Filters::DisplayText(value).text);
 	};
 	input->changes() | rpl::on_next(preview, input->lifetime());
 	box->addButton(tr::lng_serein_filter_preview(), preview);
@@ -282,6 +280,29 @@ void ActionBox(
 		}
 	});
 	box->addButton(tr::lng_close(), [=] { box->closeBox(); });
+}
+
+void PlaceholderBox(
+		not_null<Ui::GenericBox*> box,
+		not_null<Main::Session*> session,
+		FilterRules current,
+		Fn<void(FilterRules)> changed) {
+	box->setTitle(tr::lng_serein_filter_placeholder());
+	box->addRow(object_ptr<Ui::FlatLabel>(
+		box, tr::lng_serein_filter_placeholder_about(), st::boxLabel));
+	const auto field = box->addRow(object_ptr<Ui::InputField>(
+		box, st::defaultInputField, Ui::InputField::Mode::SingleLine,
+		rpl::single(QString()), current.hiddenPlaceholder));
+	field->setMaxLength(4096);
+	box->addButton(tr::lng_settings_save(), [=] {
+		auto updated = current;
+		updated.hiddenPlaceholder = field->getLastText();
+		if (Save(box, session, current, updated)) {
+			Saved(session, changed);
+			box->closeBox();
+		}
+	});
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
 void PeerListBox(
@@ -506,6 +527,10 @@ void FiltersBox(
 					box->uiShow()->showBox(Box(ActionBox, session, current,
 						&FilterRules::hiddenAuthorsAction,
 						&FilterRules::hiddenAuthorsReplacement, changed));
+				});
+				add(tr::lng_serein_filter_placeholder(tr::now), [=] {
+					box->uiShow()->showBox(Box(
+						PlaceholderBox, session, current, changed));
 				});
 			}
 		}

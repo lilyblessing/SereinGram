@@ -129,7 +129,7 @@ QImage PreviewImage::image(int size) {
 	if (Serein::Hooks::Filters::HiddenSender(item)
 		|| Serein::Hooks::Filters::Hidden(item)) {
 		return rpl::single(Ui::MessageBarContent{
-			.text = { tr::lng_serein_filter_hidden(tr::now) },
+			.text = Serein::Hooks::Filters::DisplayText(item, TextWithEntities{}),
 		});
 	}
 	return item->history()->session().changes().messageFlagsValue(

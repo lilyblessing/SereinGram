@@ -42,6 +42,7 @@ struct FilterRules {
 	QString hiddenAuthorsAction;
 	QString hideBlockedReplacement;
 	QString hiddenAuthorsReplacement;
+	QString hiddenPlaceholder;
 
 	friend bool operator==(const FilterRules &, const FilterRules &) = default;
 };

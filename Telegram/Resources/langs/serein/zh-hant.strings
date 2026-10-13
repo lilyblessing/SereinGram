@@ -689,6 +689,8 @@
 "lng_serein_filter_hidden" = "訊息已被本機過濾器隱藏";
 "lng_serein_filter_show_in_chat" = "顯示被過濾的訊息";
 "lng_serein_filter_hide_in_chat" = "隱藏被過濾的訊息";
+"lng_serein_filter_placeholder" = "隱藏訊息的佔位文字";
+"lng_serein_filter_placeholder_about" = "顯示在原本隱藏訊息的位置。留空則使用預設文字。";
 "lng_serein_hidden_messages" = "本機隱藏的訊息";
 "lng_serein_menu_hide_message" = "隱藏訊息";
 "lng_serein_menu_show_message" = "顯示訊息";

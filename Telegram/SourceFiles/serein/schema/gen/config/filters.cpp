@@ -110,6 +110,7 @@ bool Read(
 			QLatin1StringView("hiddenAuthorsAction"),
 			QLatin1StringView("hideBlockedReplacement"),
 			QLatin1StringView("hiddenAuthorsReplacement"),
+			QLatin1StringView("hiddenPlaceholder"),
 		}, error, path)) {
 		return false;
 	} else if (!Codec::RequiredKeys(object, {
@@ -124,6 +125,7 @@ bool Read(
 			QLatin1StringView("hiddenAuthorsAction"),
 			QLatin1StringView("hideBlockedReplacement"),
 			QLatin1StringView("hiddenAuthorsReplacement"),
+			QLatin1StringView("hiddenPlaceholder"),
 		}, error, path)) {
 		return false;
 	}
@@ -139,7 +141,8 @@ bool Read(
 		&& Codec::ReadField(object, QLatin1StringView("hideBlockedAction"), result.hideBlockedAction, error, path)
 		&& Codec::ReadField(object, QLatin1StringView("hiddenAuthorsAction"), result.hiddenAuthorsAction, error, path)
 		&& Codec::ReadField(object, QLatin1StringView("hideBlockedReplacement"), result.hideBlockedReplacement, error, path)
-		&& Codec::ReadField(object, QLatin1StringView("hiddenAuthorsReplacement"), result.hiddenAuthorsReplacement, error, path);
+		&& Codec::ReadField(object, QLatin1StringView("hiddenAuthorsReplacement"), result.hiddenAuthorsReplacement, error, path)
+		&& Codec::ReadField(object, QLatin1StringView("hiddenPlaceholder"), result.hiddenPlaceholder, error, path);
 }
 
 QJsonValue Write(const FilterRules &value) {
@@ -155,6 +158,7 @@ QJsonValue Write(const FilterRules &value) {
 	Codec::WriteField(object, QLatin1StringView("hiddenAuthorsAction"), value.hiddenAuthorsAction);
 	Codec::WriteField(object, QLatin1StringView("hideBlockedReplacement"), value.hideBlockedReplacement);
 	Codec::WriteField(object, QLatin1StringView("hiddenAuthorsReplacement"), value.hiddenAuthorsReplacement);
+	Codec::WriteField(object, QLatin1StringView("hiddenPlaceholder"), value.hiddenPlaceholder);
 	return object;
 }
 
@@ -212,7 +216,7 @@ std::optional<FilterRules> ParseFilterRules(
 	auto object = Codec::ParseObject(raw, out);
 	if (!object) {
 		return std::nullopt;
-	} else if (object->value(QLatin1StringView("version")) != QJsonValue(3)) {
+	} else if (object->value(QLatin1StringView("version")) != QJsonValue(4)) {
 		Codec::Fail(out, QString::fromLatin1("version"), QString::fromLatin1("unsupported version"));
 		return std::nullopt;
 	}
@@ -229,7 +233,7 @@ std::optional<FilterRules> ParseFilterRules(
 
 QByteArray SerializeFilterRules(const FilterRules &value) {
 	auto object = Write(value).toObject();
-	object.insert(QLatin1StringView("version"), 3);
+	object.insert(QLatin1StringView("version"), 4);
 	return Codec::Serialize(object);
 }
 

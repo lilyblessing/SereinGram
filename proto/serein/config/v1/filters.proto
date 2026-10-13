@@ -9,7 +9,7 @@ option (serein.options.v1.file) = {cpp_namespace: "Filters"};
 
 message FilterRules {
   option (serein.options.v1.document) = {
-    version: 3
+    version: 4
     validator: "ValidFilterRules"
   };
   option (serein.options.v1.codec) = {require_fields: true};
@@ -43,6 +43,8 @@ message FilterRules {
   }];
   string hide_blocked_replacement = 10;
   string hidden_authors_replacement = 11;
+  // Shown where a hidden message would be; empty keeps the built-in text.
+  string hidden_placeholder = 12;
 }
 
 message FilterRule {

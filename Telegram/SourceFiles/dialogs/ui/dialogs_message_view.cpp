@@ -170,7 +170,7 @@ void MessageView::prepare(
 		_loadingContext = nullptr;
 		_textCache.setMarkedText(
 			st::dialogsTextStyle,
-			TextWithEntities{ tr::lng_serein_filter_hidden(tr::now) },
+			Serein::Hooks::Filters::DisplayText(const_cast<HistoryItem*>(item.get()), TextWithEntities()),
 			DialogTextOptions());
 		_textCachedFor = item;
 		_unreadMedia = item->isUnreadMedia();

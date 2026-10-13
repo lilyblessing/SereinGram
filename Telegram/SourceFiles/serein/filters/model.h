@@ -21,6 +21,7 @@ struct Result {
 	bool substituted = false;
 	TextWithEntities substitution;
 	QString error;
+	QString placeholder;
 	int matches = 0;
 };
 
@@ -41,5 +42,6 @@ struct Result {
 	const QString &searchable = QString(),
 	const std::vector<FilterRule> &shared = {},
 	const QString &topic = QString());
+[[nodiscard]] TextWithEntities DisplayText(const Result &result);
 
 } // namespace Serein::Filters

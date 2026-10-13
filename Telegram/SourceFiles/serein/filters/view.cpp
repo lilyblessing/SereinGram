@@ -190,6 +190,8 @@ QString Searchable(not_null<HistoryItem*> item) {
 	return { tr::lng_serein_message_hidden_locally(tr::now) };
 }
 
+} // namespace
+
 [[nodiscard]] TextWithEntities DisplayText(const Result &result) {
 	if (!result.hidden) {
 		return result.text;
@@ -200,10 +202,11 @@ QString Searchable(not_null<HistoryItem*> item) {
 	if (result.substituted) {
 		return result.substitution;
 	}
-	return { tr::lng_serein_filter_hidden(tr::now) };
+	return result.placeholder.isEmpty()
+		? TextWithEntities{ tr::lng_serein_filter_hidden(tr::now) }
+		: TextWithEntities{ result.placeholder };
 }
 
-} // namespace
 } // namespace Serein::Filters
 
 namespace Serein::Hooks::Filters {
@@ -235,12 +238,7 @@ TextWithEntities DisplayText(
 TextWithEntities ReplyText(
 		HistoryItem *quoted,
 		const TextWithEntities &text) {
-	if (quoted && Serein::Filters::HiddenLocally(quoted)) {
-		return Serein::Filters::HiddenLocallyText();
-	}
-	return Hidden(quoted)
-		? TextWithEntities{ tr::lng_serein_filter_hidden(tr::now) }
-		: text;
+	return DisplayText(quoted, text);
 }
 
 bool HiddenPeer(PeerData *peer) {
