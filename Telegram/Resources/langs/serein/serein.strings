@@ -720,6 +720,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_serein_ prefix.
 "lng_serein_filter_mask_message" = "Mask the whole message";
 "lng_serein_filter_hide" = "Hide content with a placeholder";
 "lng_serein_filter_remove" = "Remove the whole message";
+"lng_serein_filter_replace_message" = "Replace the whole message";
+"lng_serein_filter_blocked_action" = "Blacklist blocking action";
+"lng_serein_filter_authors_action" = "Hidden authors action";
 "lng_serein_filter_enabled" = "Enable local filters";
 "lng_serein_filter_outgoing" = "Filter outgoing messages";
 "lng_serein_filter_blocked" = "Hide blocked authors";

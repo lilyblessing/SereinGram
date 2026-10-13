@@ -716,6 +716,9 @@
 "lng_serein_filter_mask_message" = "遮盖整条消息";
 "lng_serein_filter_hide" = "隐藏内容并保留占位";
 "lng_serein_filter_remove" = "完全隐藏整条消息";
+"lng_serein_filter_replace_message" = "替换整条消息";
+"lng_serein_filter_blocked_action" = "黑名单用户屏蔽方案";
+"lng_serein_filter_authors_action" = "本地隐藏作者方案";
 "lng_serein_filter_enabled" = "启用本地过滤";
 "lng_serein_filter_outgoing" = "过滤本机显示的发出消息";
 "lng_serein_filter_blocked" = "隐藏已屏蔽用户的消息";

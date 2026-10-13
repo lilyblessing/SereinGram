@@ -18,6 +18,8 @@ struct Result {
 	TextWithEntities text;
 	bool hidden = false;
 	bool removed = false;
+	bool substituted = false;
+	TextWithEntities substitution;
 	QString error;
 	int matches = 0;
 };

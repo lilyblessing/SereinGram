@@ -716,6 +716,9 @@
 "lng_serein_filter_mask_message" = "遮蓋整則訊息";
 "lng_serein_filter_hide" = "隱藏內容並保留佔位";
 "lng_serein_filter_remove" = "完全隱藏整則訊息";
+"lng_serein_filter_replace_message" = "取代整條訊息";
+"lng_serein_filter_blocked_action" = "黑名單使用者封鎖方案";
+"lng_serein_filter_authors_action" = "本機隱藏作者方案";
 "lng_serein_filter_enabled" = "啟用本機過濾";
 "lng_serein_filter_outgoing" = "過濾本機顯示的送出訊息";
 "lng_serein_filter_blocked" = "隱藏已封鎖使用者的訊息";

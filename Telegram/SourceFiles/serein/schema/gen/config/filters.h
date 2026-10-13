@@ -38,6 +38,10 @@ struct FilterRules {
 	std::vector<QString> hiddenAuthors;
 	std::vector<QString> excludedPeers;
 	std::vector<FilterRule> rules;
+	QString hideBlockedAction;
+	QString hiddenAuthorsAction;
+	QString hideBlockedReplacement;
+	QString hiddenAuthorsReplacement;
 
 	friend bool operator==(const FilterRules &, const FilterRules &) = default;
 };

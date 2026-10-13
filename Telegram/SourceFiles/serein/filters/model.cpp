@@ -114,21 +114,33 @@ std::vector<Edit> ZalgoEdits(const QString &text) {
 
 [[nodiscard]] QByteArray Upgraded(const QByteArray &raw) {
 	auto root = QJsonDocument::fromJson(raw).object();
-	if (root.value(u"version"_q) != QJsonValue(1)) {
+	const auto version = root.value(u"version"_q).toInt();
+	if (version != 1 && version != 2) {
 		return raw;
 	}
-	if (const auto value = root.value(u"rules"_q); value.isArray()) {
-		auto rules = QJsonArray();
-		for (const auto &entry : value.toArray()) {
-			auto rule = entry.toObject();
-			if (entry.isObject() && !rule.contains(u"peers"_q)) {
-				rule.insert(u"peers"_q, QJsonArray());
+	if (version == 1) {
+		if (const auto value = root.value(u"rules"_q); value.isArray()) {
+			auto rules = QJsonArray();
+			for (const auto &entry : value.toArray()) {
+				auto rule = entry.toObject();
+				if (entry.isObject() && !rule.contains(u"peers"_q)) {
+					rule.insert(u"peers"_q, QJsonArray());
+				}
+				rules.push_back(entry.isObject() ? QJsonValue(rule) : entry);
 			}
-			rules.push_back(entry.isObject() ? QJsonValue(rule) : entry);
+			root.insert(u"rules"_q, rules);
 		}
-		root.insert(u"rules"_q, rules);
 	}
-	root.insert(u"version"_q, 2);
+	const auto addMissing = [&](const QString &key, const QJsonValue &value) {
+		if (!root.contains(key)) {
+			root.insert(key, value);
+		}
+	};
+	addMissing(u"hideBlockedAction"_q, u"hide"_q);
+	addMissing(u"hiddenAuthorsAction"_q, u"hide"_q);
+	addMissing(u"hideBlockedReplacement"_q, QString());
+	addMissing(u"hiddenAuthorsReplacement"_q, QString());
+	root.insert(u"version"_q, 3);
 	return QJsonDocument(root).toJson(QJsonDocument::Compact);
 }
 
@@ -239,9 +251,34 @@ Result Apply(
 		|| (outgoing && !config->filterOutgoing)) {
 		return result;
 	}
-	if ((blocked && config->hideBlocked)
-		|| contains(config->hiddenAuthors, author)) {
+	if (blocked && config->hideBlocked) {
+		const auto &action = config->hideBlockedAction;
 		result.hidden = true;
+		if (action == u"remove"_q) {
+			result.removed = true;
+		} else if (action == u"mask"_q) {
+			result.substituted = true;
+			result.substitution = TextWithEntities{ u"•••"_q };
+		} else if (action == u"replace"_q) {
+			result.substituted = true;
+			result.substitution = TextWithEntities{
+				config->hideBlockedReplacement };
+		}
+		return result;
+	}
+	if (contains(config->hiddenAuthors, author)) {
+		const auto &action = config->hiddenAuthorsAction;
+		result.hidden = true;
+		if (action == u"remove"_q) {
+			result.removed = true;
+		} else if (action == u"mask"_q) {
+			result.substituted = true;
+			result.substitution = TextWithEntities{ u"•••"_q };
+		} else if (action == u"replace"_q) {
+			result.substituted = true;
+			result.substitution = TextWithEntities{
+				config->hiddenAuthorsReplacement };
+		}
 		return result;
 	}
 	if (source.text.size() > kMaxText

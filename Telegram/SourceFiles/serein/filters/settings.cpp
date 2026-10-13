@@ -240,6 +240,50 @@ void RuleBox(
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
+void ActionBox(
+		not_null<Ui::GenericBox*> box,
+		not_null<Main::Session*> session,
+		FilterRules current,
+		QString FilterRules::*action,
+		QString FilterRules::*replacement,
+		Fn<void(FilterRules)> changed) {
+	box->setTitle((action == &FilterRules::hideBlockedAction)
+		? tr::lng_serein_filter_blocked_action()
+		: tr::lng_serein_filter_authors_action());
+
+	const auto actions = QStringList{
+		u"mask"_q, u"replace"_q, u"hide"_q, u"remove"_q };
+	const auto stored = current.*action;
+	const auto found = int(actions.indexOf(stored));
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		found >= 0 ? found : int(actions.indexOf(u"hide"_q)));
+	const auto labels = std::array{
+		tr::lng_serein_filter_mask_message(tr::now),
+		tr::lng_serein_filter_replace_message(tr::now),
+		tr::lng_serein_filter_hide(tr::now),
+		tr::lng_serein_filter_remove(tr::now),
+	};
+	for (auto i = 0; i != int(labels.size()); ++i) {
+		box->addRow(object_ptr<Ui::Radiobutton>(box, group, i, labels[i]));
+	}
+	box->addRow(object_ptr<Ui::FlatLabel>(
+		box, tr::lng_serein_filter_replacement(), st::boxLabel));
+	const auto field = box->addRow(object_ptr<Ui::InputField>(
+		box, st::defaultInputField, Ui::InputField::Mode::SingleLine,
+		rpl::single(QString()), current.*replacement));
+	field->setMaxLength(4096);
+	box->addButton(tr::lng_settings_save(), [=] {
+		auto updated = current;
+		updated.*action = actions[group->current()];
+		updated.*replacement = field->getLastText();
+		if (Save(box, session, current, updated)) {
+			Saved(session, changed);
+			box->closeBox();
+		}
+	});
+	box->addButton(tr::lng_close(), [=] { box->closeBox(); });
+}
+
 void PeerListBox(
 		not_null<Ui::GenericBox*> box,
 		not_null<Main::Session*> session,
@@ -439,6 +483,13 @@ void FiltersBox(
 					Saved(session, changed);
 				}
 			}, row->lifetime());
+			if (member == &FilterRules::hideBlocked) {
+				add(tr::lng_serein_filter_blocked_action(tr::now), [=] {
+					box->uiShow()->showBox(Box(ActionBox, session, current,
+						&FilterRules::hideBlockedAction,
+						&FilterRules::hideBlockedReplacement, changed));
+				});
+			}
 		}
 		for (const auto &[member, label] : std::array{
 			std::pair(IdList(&FilterRules::hiddenAuthors),
@@ -450,6 +501,13 @@ void FiltersBox(
 				box->uiShow()->showBox(Box(PeerListBox,
 					session, current, member, changed));
 			});
+			if (member == IdList(&FilterRules::hiddenAuthors)) {
+				add(tr::lng_serein_filter_authors_action(tr::now), [=] {
+					box->uiShow()->showBox(Box(ActionBox, session, current,
+						&FilterRules::hiddenAuthorsAction,
+						&FilterRules::hiddenAuthorsReplacement, changed));
+				});
+			}
 		}
 		const auto count = int(current.rules.size());
 		for (auto i = 0; i != count; ++i) {
