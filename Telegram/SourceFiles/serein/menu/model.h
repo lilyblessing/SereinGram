@@ -15,7 +15,7 @@ struct Entry {
 	const char *titleKey;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 37>({{
+inline constexpr auto kEntries = std::array<Entry, 38>({{
 	{ ActionId::Reply, "lng_serein_menu_reply" },
 	{ ActionId::Edit, "lng_serein_menu_edit" },
 	{ ActionId::Copy, "lng_serein_menu_copy" },
@@ -39,6 +39,7 @@ inline constexpr auto kEntries = std::array<Entry, 37>({{
 	{ ActionId::Screenshot, "lng_serein_menu_screenshot" },
 	{ ActionId::Reading, "lng_serein_menu_reading" },
 	{ ActionId::FilterAuthor, "lng_serein_filter_author_hide" },
+	{ ActionId::SelectionFilter, "lng_serein_filter_selection_add" },
 	{ ActionId::EditHistory, "lng_serein_menu_edit_history" },
 	{ ActionId::DeletedMessages, "lng_serein_menu_deleted_messages" },
 	{ ActionId::RestoredMedia, "lng_serein_menu_restored_media" },
