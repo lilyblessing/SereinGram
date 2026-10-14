@@ -1,6 +1,7 @@
 #include "serein/schedule/model.h"
 
 #include "serein/schema/gen/settings/services.h"
+#include "base/basic_types.h"
 
 #include <algorithm>
 #include <vector>
