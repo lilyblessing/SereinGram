@@ -168,9 +168,9 @@ void ScheduleServerSide(
 }
 
 void StartDailyScheduler(gsl::not_null<Main::Session*> session) {
-	const auto scheduler = new DailyScheduler(&Core::App(), session);
-	// WHY: the timer must die with the session, or its tick would keep reading
-	// a session that has already been logged out.
+	// WHY: no QObject parent, so the session lifetime below is the only owner;
+	// two owners could double-delete the timer during teardown.
+	const auto scheduler = new DailyScheduler(nullptr, session);
 	session->lifetime().add([=] { delete scheduler; });
 }
 
