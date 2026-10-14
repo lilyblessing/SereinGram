@@ -9,6 +9,7 @@
 #include "data/data_peer.h"
 #include "data/data_peer_id.h"
 #include "lang/lang_keys.h"
+#include "logs.h"
 #include "main/main_session.h"
 #include "settings/settings_common.h"
 #include "ui/layers/generic_box.h"
@@ -130,6 +131,11 @@ void ShowBox(
 			Expects(options.Set(
 				ServiceSettings::kDailySchedules,
 				SerializeConfig(saved)));
+			LOG(("daily saved peer=%1 minute=%2 textLen=%3 premium=%4")
+				.arg(id)
+				.arg(minute)
+				.arg(text->getLastText().size())
+				.arg(session->premium() ? 1 : 0));
 			if (session->premium() && on) {
 				ScheduleServerSide(session, peer);
 				controller->showToast(
