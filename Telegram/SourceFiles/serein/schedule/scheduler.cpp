@@ -2,6 +2,7 @@
 
 #include "serein/core/options.h"
 #include "serein/schedule/model.h"
+#include "serein/schema/gen/config/schedule.h"
 #include "serein/schema/gen/settings/services.h"
 #include "api/api_common.h"
 #include "apiwrap.h"
@@ -80,7 +81,8 @@ public:
 private:
 	void check() {
 		const auto config = ReadConfig(
-			ForAccount(_session).Get(ServiceSettings::kDailySchedules));
+			ForAccount(_session).Get(ServiceSettings::kDailySchedules))
+			.value_or(DailySchedules());
 		if (config.entries.empty()) {
 			return;
 		}
@@ -124,7 +126,8 @@ private:
 	void markSent(const QString &id, const QString &today) {
 		auto &options = ForAccount(_session);
 		const auto config = ReadConfig(
-			options.Get(ServiceSettings::kDailySchedules));
+			options.Get(ServiceSettings::kDailySchedules))
+			.value_or(DailySchedules());
 		auto ok = false;
 		const auto serialized = id.toULongLong(&ok);
 		if (!ok || !serialized) {
@@ -153,7 +156,8 @@ void ScheduleServerSide(
 	const auto id = SerializePeerId(peer->id);
 	auto &options = ForAccount(session);
 	const auto config = ReadConfig(
-		options.Get(ServiceSettings::kDailySchedules));
+		options.Get(ServiceSettings::kDailySchedules))
+		.value_or(DailySchedules());
 	const auto entry = FindEntry(config, id);
 	// Never schedule twice: a second call would stack a second daily repeat.
 	if (!entry || entry->serverScheduled || entry->text.trimmed().isEmpty()) {

@@ -3,10 +3,13 @@
 #include "serein/core/options.h"
 #include "serein/schedule/model.h"
 #include "serein/schedule/scheduler.h"
+#include "serein/schema/gen/config/schedule.h"
 #include "serein/schema/gen/settings/services.h"
+#include "base/basic_types.h"
 #include "data/data_peer.h"
 #include "data/data_peer_id.h"
 #include "lang/lang_keys.h"
+#include "main/main_session.h"
 #include "settings/settings_common.h"
 #include "ui/layers/generic_box.h"
 #include "ui/ui_utility.h"
@@ -70,7 +73,8 @@ void ShowBox(
 	controller->show(Box([=](not_null<Ui::GenericBox*> box) {
 		box->setTitle(tr::lng_serein_daily_schedule());
 		const auto config = ReadConfig(
-			ForAccount(session).Get(ServiceSettings::kDailySchedules));
+			ForAccount(session).Get(ServiceSettings::kDailySchedules))
+			.value_or(DailySchedules());
 		const auto entry = FindEntry(config, id);
 		const auto enabled = box->addRow(object_ptr<Ui::Checkbox>(
 			box,
@@ -107,7 +111,8 @@ void ShowBox(
 			}
 			auto &options = ForAccount(session);
 			const auto current = ReadConfig(
-				options.Get(ServiceSettings::kDailySchedules));
+				options.Get(ServiceSettings::kDailySchedules))
+				.value_or(DailySchedules());
 			const auto on = enabled->checked();
 			const auto minute = parsed.hour() * 60 + parsed.minute();
 			const auto updated = on
@@ -144,7 +149,7 @@ void AddDailyScheduleRow(const ChatSettingsContext &context) {
 		tr::lng_serein_daily_schedule(),
 		ForAccount(session).Value(ServiceSettings::kDailySchedules)
 			| rpl::map([=](const QByteArray &raw) {
-				return Describe(ReadConfig(raw), id);
+				return Describe(ReadConfig(raw).value_or(DailySchedules()), id);
 			}),
 		st::settingsButtonNoIcon
 	)->setClickedCallback([=] {
