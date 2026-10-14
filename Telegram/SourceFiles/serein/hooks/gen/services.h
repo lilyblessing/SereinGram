@@ -44,5 +44,7 @@ namespace Serein::Hooks::ServiceSettings {
 [[nodiscard]] rpl::producer<bool> AndroidWebAppsValue();
 [[nodiscard]] bool ProxyPausedByVpn();
 [[nodiscard]] rpl::producer<bool> ProxyPausedByVpnValue();
+[[nodiscard]] QByteArray DailySchedules(gsl::not_null<Main::Session*> session);
+[[nodiscard]] rpl::producer<QByteArray> DailySchedulesValue(gsl::not_null<Main::Session*> session);
 
 } // namespace Serein::Hooks::ServiceSettings

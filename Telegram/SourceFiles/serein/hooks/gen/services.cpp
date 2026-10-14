@@ -134,4 +134,12 @@ rpl::producer<bool> ProxyPausedByVpnValue() {
 	return ForDevice().Value(Serein::ServiceSettings::kProxyPausedByVpn);
 }
 
+QByteArray DailySchedules(gsl::not_null<Main::Session*> session) {
+	return ForAccount(session).Get(Serein::ServiceSettings::kDailySchedules);
+}
+
+rpl::producer<QByteArray> DailySchedulesValue(gsl::not_null<Main::Session*> session) {
+	return ForAccount(session).Value(Serein::ServiceSettings::kDailySchedules);
+}
+
 } // namespace Serein::Hooks::ServiceSettings

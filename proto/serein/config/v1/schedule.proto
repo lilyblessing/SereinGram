@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package serein.config.v1;
+
+import "buf/validate/validate.proto";
+import "serein/options/v1/options.proto";
+
+option (serein.options.v1.file) = {cpp_namespace: "Schedule"};
+
+// A message sent to one chat once a day at a fixed local time.
+message DailySchedule {
+  option (serein.options.v1.codec) = {require_fields: true};
+
+  // Serialized peer id of the target chat.
+  string peer = 1 [(buf.validate.field).string = {pattern: "^[1-9][0-9]{0,19}$"}];
+  // Local time of day as minutes since midnight (0..1439).
+  int32 minute_of_day = 2 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 1439
+  }];
+  // Text sent to the chat; entries with empty text are skipped.
+  string text = 3 [(buf.validate.field).string = {max_len: 4096}];
+  // Local date (yyyy-MM-dd) of the last local-timer send; empty if never.
+  string last_sent_date = 4 [(buf.validate.field).string = {max_len: 10}];
+  // True once a server-side daily repeat (Premium) was scheduled for this chat.
+  bool server_scheduled = 5;
+}
+
+// Per-chat daily schedules, one entry per configured chat.
+message DailySchedules {
+  option (serein.options.v1.document) = {version: 1};
+  option (serein.options.v1.codec) = {require_fields: true};
+
+  repeated DailySchedule entries = 1 [(buf.validate.field).repeated.max_items = 200];
+}

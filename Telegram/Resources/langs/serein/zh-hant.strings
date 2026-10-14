@@ -1316,3 +1316,9 @@
 "lng_serein_proxy_notes_row_about" = "為每個代理新增簡短備註，備註顯示在代理清單中的位址後面。";
 "lng_serein_custom_doh_row_about" = "使用你選擇的 DNS-over-HTTPS 伺服器，協助 Telegram 在受限網路中連線。";
 "lng_serein_dc_status_row_about" = "開啟 Telegram 資料中心清單，查看各自的位置和回應時間，並可隨時重新檢測。";
+"lng_serein_daily_schedule" = "每日定時傳送";
+"lng_serein_daily_schedule_time" = "傳送時間";
+"lng_serein_daily_schedule_text" = "傳送內容";
+"lng_serein_daily_schedule_off" = "未設定";
+"lng_serein_daily_schedule_about" = "在 SereinGram 執行期間，每天向此聊天傳送一次此訊息。";
+"lng_serein_daily_schedule_about_server" = "由 Telegram 伺服器每天傳送，無需保持 SereinGram 執行。";

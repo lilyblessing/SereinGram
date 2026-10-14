@@ -1320,3 +1320,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_serein_ prefix.
 "lng_serein_proxy_notes_row_about" = "Add a short note to each proxy; it appears after the address in the proxy list.";
 "lng_serein_custom_doh_row_about" = "Use a DNS-over-HTTPS server of your choice to help Telegram connect on restricted networks.";
 "lng_serein_dc_status_row_about" = "Open a list of Telegram data centers with their location and response time, and check again at any time.";
+"lng_serein_daily_schedule" = "Daily scheduled message";
+"lng_serein_daily_schedule_time" = "Send time";
+"lng_serein_daily_schedule_text" = "Message to send";
+"lng_serein_daily_schedule_off" = "Not set";
+"lng_serein_daily_schedule_about" = "Sends the message to this chat once a day while SereinGram is running.";
+"lng_serein_daily_schedule_about_server" = "Sent every day by Telegram's servers; SereinGram does not need to be running.";
