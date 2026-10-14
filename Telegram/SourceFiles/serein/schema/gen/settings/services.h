@@ -9,6 +9,7 @@ namespace Serein::ServiceSettings {
 [[nodiscard]] bool ValidServicesBytes(const QByteArray &value);
 [[nodiscard]] bool ValidSendTranslationsBytes(const QByteArray &value);
 [[nodiscard]] bool ValidProxyNotes(const QByteArray &value);
+[[nodiscard]] bool ValidDailySchedulesBytes(const QByteArray &value);
 
 inline const auto kServicesConfig = Option<QByteArray>{
 	"serein.services",
@@ -137,6 +138,14 @@ inline constexpr auto kProxyPausedByVpn = Option<bool>{
 	Category::Services,
 	"lng_serein_proxy_vpn",
 	static_cast<unsigned>(Flag::Hidden) };
+inline const auto kDailySchedules = Option<QByteArray>{
+	"serein.dailySchedules",
+	Scope::Account,
+	QByteArray(),
+	Category::Services,
+	"lng_serein_daily_schedule",
+	static_cast<unsigned>(Flag::Hidden),
+	&ValidDailySchedulesBytes };
 
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kServicesConfig));
@@ -155,6 +164,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kFasterTransfers));
 	Expects(registry.Add(kAndroidWebApps));
 	Expects(registry.Add(kProxyPausedByVpn));
+	Expects(registry.Add(kDailySchedules));
 }
 
 } // namespace Serein::ServiceSettings

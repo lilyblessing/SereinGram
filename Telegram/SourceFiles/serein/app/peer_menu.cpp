@@ -25,6 +25,7 @@
 #include "serein/privacy/alias_row.h"
 #include "serein/privacy/options.h"
 #include "serein/services/send_translation.h"
+#include "serein/schedule/row.h"
 #include "data/data_forum_topic.h"
 #include "data/data_histories.h"
 #include "data/data_peer.h"
@@ -41,13 +42,14 @@ namespace Serein::Hooks {
 
 namespace {
 
-constexpr auto kChatSettingsRows = std::array<ChatSettingsRow, 6>{
+constexpr auto kChatSettingsRows = std::array<ChatSettingsRow, 7>{
 	&Serein::AddSendTranslationRow,
 	&Serein::Ghost::AddReadReceiptRow,
 	&Serein::HistoryFeature::AddRecordingRow,
 	&Serein::Chats::AddLocalPinRow,
 	&Serein::Privacy::AddAliasRow,
 	&Serein::Media::AddMediaDownloadRow,
+	&Serein::Schedule::AddDailyScheduleRow,
 };
 
 void FillReadExceptionAction(

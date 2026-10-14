@@ -129,6 +129,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "serein/hooks/compose/confirm.h"
 #include "serein/hooks/compose/inline_bot.h"
 #include "serein/hooks/compose/placeholder.h"
+#include "serein/hooks/filters/view.h"
 #include "history/view/history_view_chat_section.h"
 #include "history/view/history_view_cursor_state.h"
 #include "history/view/history_view_service_message.h"
@@ -11077,9 +11078,11 @@ void HistoryWidget::updateReplyEditText(not_null<HistoryItem*> item) {
 				return answer->text;
 			}
 		}
-		return (_editMsgId || _replyTo.quote.empty())
+		return _editMsgId
 			? item->inReplyText()
-			: _replyTo.quote;
+			: (_replyTo.quote.empty()
+				? Serein::Hooks::Filters::ReplyText(item, item->inReplyText())
+				: _replyTo.quote);
 	}();
 	_replyEditMsgText.setMarkedText(
 		st::defaultTextStyle,

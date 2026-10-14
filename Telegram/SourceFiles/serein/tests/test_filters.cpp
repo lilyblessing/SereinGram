@@ -5,6 +5,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
+#include <QtCore/QRegularExpression>
 
 #include <iostream>
 
@@ -153,6 +154,15 @@ TEST_CASE("Filters") {
 	const auto hidden = Apply(Config(Rule(u"foo"_q, u"hide"_q)),
 		{ u"foo"_q }, {}, {}, false, false);
 	Require(hidden.hidden, "hide action did not hide locally");
+	const auto escapedPattern = QRegularExpression::escape(u"a.b"_q);
+	const auto escapedRaw = Config(Rule(escapedPattern, u"hide"_q));
+	const auto dotMatch = Apply(escapedRaw,
+		{ u"a.b"_q }, {}, {}, false, false);
+	Require(dotMatch.hidden, "escaped selection did not match itself");
+	const auto notMatch = Apply(escapedRaw,
+		{ u"axb"_q }, {}, {}, false, false);
+	Require(!notMatch.hidden && notMatch.text.text == u"axb"_q,
+		"escaped selection matched a different character");
 	Require(!Validate(Config(Rule(u"("_q, u"hide"_q))),
 		"invalid regex accepted");
 	const auto excessive = Apply(Config(Rule(u"a"_q, u"replace"_q)),
@@ -195,6 +205,33 @@ TEST_CASE("Filters") {
 	auto reversedHide = Rule(u"foo"_q, u"hide"_q);
 	reversedHide.insert(u"reversed"_q, true);
 	Require(withRule(reversedHide), "reversed hide rule rejected");
+	Require(Validate(Config(Rule(u"foo"_q, u"remove"_q))),
+		"remove action rejected");
+	const auto removed = Apply(Config(Rule(u"foo"_q, u"remove"_q)),
+		{ u"foo"_q }, {}, {}, false, false);
+	Require(removed.hidden && removed.removed && removed.text.text == u"foo"_q,
+		"remove action did not remove locally");
+	// True whole-element removal (Element::isHidden lever) relies on the
+	// invariant removed => hidden: the view only consults the remove flag
+	// inside the hidden branch.
+	Require(removed.hidden && removed.removed,
+		"remove result not flagged for whole-element removal");
+	const auto searchableRemoved = Apply(Config(Rule(u"boom"_q, u"remove"_q)),
+		{ u"harmless body"_q }, {}, {}, false, false, u"\nboom"_q);
+	Require(searchableRemoved.hidden && searchableRemoved.removed
+		&& searchableRemoved.text.text == u"harmless body"_q,
+		"remove via searchable did not flag whole-message removal");
+	auto reversedRemove = Rule(u"foo"_q, u"remove"_q);
+	reversedRemove.insert(u"reversed"_q, true);
+	Require(withRule(reversedRemove), "reversed remove rule rejected");
+	const auto kept = Apply(Config(reversedRemove),
+		{ u"foo"_q }, {}, {}, false, false);
+	Require(!kept.hidden && !kept.removed,
+		"reversed remove hid the matching message");
+	const auto stripped = Apply(Config(reversedRemove),
+		{ u"spam"_q }, {}, {}, false, false);
+	Require(stripped.hidden && stripped.removed,
+		"reversed remove kept a non-matching message");
 	Require(!withField(u"pattern"_q, u"("_q), "invalid regex accepted");
 	Require(!withField(u"id"_q, u"00000000-0000-0000-0000-00000000000A"_q),
 		"uppercase rule id accepted");
@@ -219,4 +256,46 @@ TEST_CASE("Filters") {
 	Require(!withConfig(u"rules"_q, QJsonArray{ rule, rule }),
 		"duplicate rule ids accepted");
 	std::cout << "PASS: Serein filter budgets and projection" << std::endl;
+}
+
+TEST_CASE("FiltersCache") {
+	using namespace Serein::Filters;
+	Require(CachedRules({}).has_value()
+		&& CachedRules({})->rules.empty()
+		&& !CachedRules({})->enabled,
+		"empty cached config rejected");
+	const auto rawA = Config(Rule(u"foo"_q, u"replace"_q));
+	const auto rawB = Config(Rule(u"bar"_q, u"replace"_q));
+	const auto a = CachedRules(rawA);
+	Require(a && a->rules.size() == 1 && a->rules[0].pattern == u"foo"_q,
+		"cached parse of the first config failed");
+	const auto b = CachedRules(rawB);
+	Require(b && b->rules.size() == 1 && b->rules[0].pattern == u"bar"_q,
+		"cached parse of the second config failed");
+	const auto a2 = CachedRules(rawA);
+	Require(a2 && a2->rules[0].pattern == u"foo"_q,
+		"cache cross-contaminated configs");
+	Require(Apply(rawA, { u"foo"_q }, {}, {}, false, false).text.text
+			== u"bar"_q,
+		"cached config did not apply");
+	const auto distinct = [](int index) {
+		auto rule = Rule(u"foo"_q, u"replace"_q);
+		rule.insert(u"title"_q, QString::number(index));
+		return Config(rule);
+	};
+	auto cachedClock = QElapsedTimer();
+	cachedClock.start();
+	for (auto i = 0; i != 200; ++i) {
+		Require(CachedRules(rawA).has_value(), "cached lookup failed");
+	}
+	const auto cachedMs = cachedClock.elapsed();
+	auto freshClock = QElapsedTimer();
+	freshClock.start();
+	for (auto i = 0; i != 200; ++i) {
+		Require(CachedRules(distinct(i)).has_value(), "fresh parse failed");
+	}
+	const auto freshMs = freshClock.elapsed();
+	Require(cachedMs < freshMs,
+		"cached parses were not faster than fresh parses");
+	std::cout << "PASS: Serein filter rules cache" << std::endl;
 }

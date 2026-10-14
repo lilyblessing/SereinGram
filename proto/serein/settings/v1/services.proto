@@ -222,4 +222,17 @@ message ServicesSettings {
     title: "lng_serein_proxy_vpn"
     hidden: true
   }];
+  optional bytes daily_schedules = 17 [(serein.options.v1.field) = {
+    scope: SCOPE_ACCOUNT
+    title: "lng_serein_daily_schedule"
+    keywords: [
+      "schedule",
+      "daily",
+      "message",
+      "check-in"
+    ]
+    hidden: true
+    custom_ui: true
+    validator: "ValidDailySchedulesBytes"
+  }];
 }

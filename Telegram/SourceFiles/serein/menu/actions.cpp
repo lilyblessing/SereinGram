@@ -98,7 +98,8 @@ void Apply(
 		HistoryItem *item,
 		Window::SessionController *controller,
 		MessageIdsList selected,
-		SelectionTarget selection) {
+		SelectionTarget selection,
+		QString selectedText) {
 	Expects(menu != nullptr);
 	if (controller) {
 		Contribute({
@@ -107,6 +108,7 @@ void Apply(
 			.controller = controller,
 			.selected = selected,
 			.selection = selection,
+			.selectedText = selectedText,
 		});
 	}
 	const auto config = ForDevice().Get(kMenuConfig);

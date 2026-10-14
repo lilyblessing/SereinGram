@@ -1543,7 +1543,7 @@ bool Element::isHiddenByGroup() const {
 }
 
 bool Element::isHidden() const {
-	return isHiddenByGroup();
+	return isHiddenByGroup() || (_flags & Flag::SereinRemoved);
 }
 
 void Element::overrideMedia(std::unique_ptr<Media> media) {
@@ -1625,10 +1625,13 @@ void Element::refreshMedia(Element *replacing) {
 	if (_flags & Flag::MediaOverriden) {
 		return;
 	}
-	_flags &= ~Flag::HiddenByGroup;
+	_flags &= ~(Flag::HiddenByGroup | Flag::SereinRemoved);
 
 	const auto item = data();
 	if (Serein::Hooks::Filters::Hidden(item)) {
+		if (Serein::Hooks::Filters::Removed(item)) {
+			_flags |= Flag::SereinRemoved;
+		}
 		_media = nullptr;
 		return;
 	}

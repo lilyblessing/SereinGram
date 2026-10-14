@@ -24,6 +24,7 @@
 #include "serein/messages/selection_limit.h"
 #include "serein/network/vpn_proxy.h"
 #include "serein/services/auto_transcription.h"
+#include "serein/schedule/scheduler.h"
 #include "serein/settings/lock.h"
 
 #include <array>
@@ -58,6 +59,11 @@ constexpr auto kModules = std::array{
 	Module{ "filters.subscription", Filters::StartRuleSubscription },
 	Module{ "chats.recent", nullptr, nullptr, Chats::TrackRecentChats },
 	Module{ "services.auto_transcribe", nullptr, WatchAutoTranscription },
+	Module{
+		"services.daily_schedule",
+		nullptr,
+		Schedule::StartDailyScheduler,
+	},
 	Module{
 		"chats.reading_position",
 		nullptr,

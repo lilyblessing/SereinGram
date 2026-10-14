@@ -58,7 +58,19 @@ COMMENT = re.compile(r"^\s*//")
 
 def owned_files(root):
     tracked = subprocess.run(
-        ["git", "ls-files", "-z", "--", *TEXT_PATTERNS], cwd=root, check=True, capture_output=True
+        [
+            "git",
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "--",
+            *TEXT_PATTERNS,
+        ],
+        cwd=root,
+        check=True,
+        capture_output=True,
     ).stdout.decode()
     for name in sorted(filter(None, tracked.split("\0"))):
         path = Path(name)

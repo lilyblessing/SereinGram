@@ -379,6 +379,16 @@
       "app": true,
       "libraries": true
     },
+    "serein/schedule/": {
+      "own": [
+        "serein/schedule/",
+        "serein/core/",
+        "serein/schema/",
+        "serein/ports/"
+      ],
+      "app": true,
+      "libraries": true
+    },
     "serein/snapshot/": {
       "own": [
         "serein/snapshot/",

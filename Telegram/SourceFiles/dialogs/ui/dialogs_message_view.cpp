@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "dialogs/ui/dialogs_message_view.h"
+#include "serein/hooks/filters/view.h"
 
 #include "history/history.h"
 #include "history/history_item.h"
@@ -158,6 +159,23 @@ void MessageView::prepare(
 		Data::SavedMessages *monoforum,
 		Fn<void()> customEmojiRepaint,
 		ToPreviewOptions options) {
+	// WHY: HiddenSender takes a mutable item, it only reads it.
+	if (Serein::Hooks::Filters::HiddenSender(
+			const_cast<HistoryItem*>(item.get()))) {
+		_topics = nullptr;
+		_senderCache = { st::dialogsTextWidthMin };
+		_leftIcon = nullptr;
+		_imagesCache = {};
+		_spoiler = nullptr;
+		_loadingContext = nullptr;
+		_textCache.setMarkedText(
+			st::dialogsTextStyle,
+			Serein::Hooks::Filters::DisplayText(const_cast<HistoryItem*>(item.get()), TextWithEntities()),
+			DialogTextOptions());
+		_textCachedFor = item;
+		_unreadMedia = item->isUnreadMedia();
+		return;
+	}
 	if (!forum && !monoforum) {
 		_topics = nullptr;
 	} else if (!_topics
