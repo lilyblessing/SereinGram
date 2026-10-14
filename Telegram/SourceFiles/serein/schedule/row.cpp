@@ -132,6 +132,8 @@ void ShowBox(
 				SerializeConfig(saved)));
 			if (session->premium() && on) {
 				ScheduleServerSide(session, peer);
+				controller->showToast(
+					tr::lng_serein_daily_schedule_about_server(tr::now));
 			}
 			box->closeBox();
 		});

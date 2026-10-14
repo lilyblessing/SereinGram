@@ -38,8 +38,7 @@ constexpr auto kCatchUpMinutes = 2 * 60; // Grace window after the set time.
 	auto target = QDateTime(
 		now.date(),
 		QTime(minuteOfDay / 60, minuteOfDay % 60));
-	// WHY: the server rejects a schedule closer than ten seconds, so a target
-	// that is already inside that window rolls over to tomorrow instead.
+	// WHY: the server rejects schedules <10s out; such targets roll over.
 	if (target <= now.addSecs(10)) {
 		target = target.addDays(1);
 	}
@@ -66,8 +65,7 @@ void Send(
 	session->api().sendMessage(std::move(message));
 }
 
-// WHY: LEG B runs only while the app is alive and only for chats that are
-// not server-scheduled, so a chat is never sent twice.
+// WHY: LEG B runs only while the app is alive and only for non-scheduled chats.
 class DailyScheduler final : public QObject {
 public:
 	DailyScheduler(QObject *parent, gsl::not_null<Main::Session*> session)
@@ -87,9 +85,8 @@ private:
 			return;
 		}
 		if (_session->premium()) {
-			// WHY: Premium means LEG A owns every chat, so never fire the
-			// local timer; ScheduleServerSide is a no-op once a chat is
-			// already scheduled, so ticks cannot stack a second repeat.
+			// WHY: Premium means LEG A owns every chat; ScheduleServerSide
+			// is a no-op once scheduled, so ticks cannot stack a repeat.
 			for (const auto &entry : config.entries) {
 				if (const auto peer = TargetPeer(_session, entry.peer)) {
 					ScheduleServerSide(_session, peer);
@@ -101,9 +98,9 @@ private:
 		const auto today = now.date().toString(u"yyyy-MM-dd"_q);
 		const auto minute = now.time().hour() * 60 + now.time().minute();
 		for (const auto &entry : config.entries) {
-			// WHY: a chat that still has a live server-side repeat must never
-			// also fire locally, or the message would be sent twice.
-			if (entry.serverScheduled
+			// WHY: only a live server-side repeat (premium) blocks LEG B, so
+			// an expired premium no longer wedges the entry in a dead state.
+			if ((entry.serverScheduled && _session->premium())
 				|| entry.text.trimmed().isEmpty()
 				|| entry.lastSentDate == today) {
 				continue;

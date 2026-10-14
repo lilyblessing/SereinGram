@@ -1325,4 +1325,4 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_serein_ prefix.
 "lng_serein_daily_schedule_text" = "Message to send";
 "lng_serein_daily_schedule_off" = "Not set";
 "lng_serein_daily_schedule_about" = "Sends the message to this chat once a day while SereinGram is running.";
-"lng_serein_daily_schedule_about_server" = "Sent every day by Telegram's servers; SereinGram does not need to be running.";
+"lng_serein_daily_schedule_about_server" = "Saved on Telegram's servers: a daily repeating scheduled message, first delivered at the set time (tomorrow if it has passed today). See it in the chat's Scheduled messages - delete it there before changing the time or text.";
