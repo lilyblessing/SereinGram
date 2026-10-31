@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "info/saved/info_saved_music_provider.h"
+#include "serein/hooks/filters/view.h"
 
 #include "base/unixtime.h"
 #include "core/application.h"
@@ -294,6 +295,9 @@ BaseLayout *MusicProvider::getLayout(
 std::unique_ptr<BaseLayout> MusicProvider::createLayout(
 		not_null<HistoryItem*> item,
 		not_null<Overview::Layout::Delegate*> delegate) {
+	if (Serein::Hooks::Filters::HiddenSender(item)) {
+		return nullptr;
+	}
 	using namespace Overview::Layout;
 	if (const auto media = item->media()) {
 		if (const auto file = media->document()) {

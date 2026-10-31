@@ -3,6 +3,7 @@
 #include "base/basic_types.h"
 #include "serein/hooks/menu/selection.h"
 
+#include <QString>
 #include <vector>
 
 class HistoryItem;
@@ -24,6 +25,7 @@ struct Context {
 	not_null<Window::SessionController*> controller;
 	const std::vector<FullMsgId> &selected;
 	SelectionTarget selection;
+	QString selectedText;
 };
 
 using Contributor = Fn<void(const Context &context)>;

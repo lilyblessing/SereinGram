@@ -1,4 +1,5 @@
 #include "serein/hooks/interface/notifications.h"
+#include "serein/hooks/filters/view.h"
 
 #include "serein/core/options.h"
 #include "serein/features/keyword_alerts/model/keywords.h"
@@ -69,6 +70,12 @@ template <typename Document, typename Read>
 std::optional<bool> ReviewNotification(
 		not_null<HistoryItem*> item,
 		bool message) {
+	if (message && Serein::Hooks::Filters::HiddenSender(item)) {
+		return false;
+	}
+	if (Serein::Hooks::Filters::Hidden(item)) {
+		return false;
+	}
 	const auto keywordMatch = KeywordMatch(item, message);
 	if (Quiet(item, message, keywordMatch)) {
 		return false;

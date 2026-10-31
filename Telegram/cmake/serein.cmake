@@ -19,6 +19,9 @@ set(serein_sources
     serein/core/exchange.cpp
     serein/core/patterns.cpp
     serein/core/id_list.cpp
+    serein/schedule/model.cpp
+    serein/schedule/scheduler.cpp
+    serein/schedule/row.cpp
     serein/app/options.cpp
     serein/adapters/tdesktop/prefs.cpp
     serein/schema/codec.cpp

@@ -11,4 +11,10 @@ void InsertAuthorAction(
 	HistoryItem *item,
 	Window::SessionController *controller);
 
+void InsertSelectionRuleAction(
+	Ui::PopupMenu *menu,
+	HistoryItem *item,
+	Window::SessionController *controller,
+	const QString &selected);
+
 } // namespace Serein::Filters

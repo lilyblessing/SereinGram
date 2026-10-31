@@ -71,7 +71,7 @@ bool Validate(
 	if (!(Codec::Matches(value.id, QString::fromUtf8("^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$")))) {
 		return Codec::Fail(error, Codec::Child(path, QLatin1StringView("id")), QString::fromLatin1("violates the schema rules"));
 	}
-	if (!((value.action == QString::fromUtf8("mask") || value.action == QString::fromUtf8("replace") || value.action == QString::fromUtf8("hide")))) {
+	if (!((value.action == QString::fromUtf8("mask") || value.action == QString::fromUtf8("replace") || value.action == QString::fromUtf8("hide") || value.action == QString::fromUtf8("remove")))) {
 		return Codec::Fail(error, Codec::Child(path, QLatin1StringView("action")), QString::fromLatin1("violates the schema rules"));
 	}
 	if (!(qsizetype(value.peers.size()) <= 100)) {
@@ -106,6 +106,11 @@ bool Read(
 			QLatin1StringView("hiddenAuthors"),
 			QLatin1StringView("excludedPeers"),
 			QLatin1StringView("rules"),
+			QLatin1StringView("hideBlockedAction"),
+			QLatin1StringView("hiddenAuthorsAction"),
+			QLatin1StringView("hideBlockedReplacement"),
+			QLatin1StringView("hiddenAuthorsReplacement"),
+			QLatin1StringView("hiddenPlaceholder"),
 		}, error, path)) {
 		return false;
 	} else if (!Codec::RequiredKeys(object, {
@@ -116,6 +121,11 @@ bool Read(
 			QLatin1StringView("hiddenAuthors"),
 			QLatin1StringView("excludedPeers"),
 			QLatin1StringView("rules"),
+			QLatin1StringView("hideBlockedAction"),
+			QLatin1StringView("hiddenAuthorsAction"),
+			QLatin1StringView("hideBlockedReplacement"),
+			QLatin1StringView("hiddenAuthorsReplacement"),
+			QLatin1StringView("hiddenPlaceholder"),
 		}, error, path)) {
 		return false;
 	}
@@ -127,7 +137,12 @@ bool Read(
 		&& Codec::ReadField(object, QLatin1StringView("stripZalgo"), result.stripZalgo, error, path)
 		&& Codec::ReadField(object, QLatin1StringView("hiddenAuthors"), result.hiddenAuthors, error, path)
 		&& Codec::ReadField(object, QLatin1StringView("excludedPeers"), result.excludedPeers, error, path)
-		&& Codec::ReadField(object, QLatin1StringView("rules"), result.rules, error, path);
+		&& Codec::ReadField(object, QLatin1StringView("rules"), result.rules, error, path)
+		&& Codec::ReadField(object, QLatin1StringView("hideBlockedAction"), result.hideBlockedAction, error, path)
+		&& Codec::ReadField(object, QLatin1StringView("hiddenAuthorsAction"), result.hiddenAuthorsAction, error, path)
+		&& Codec::ReadField(object, QLatin1StringView("hideBlockedReplacement"), result.hideBlockedReplacement, error, path)
+		&& Codec::ReadField(object, QLatin1StringView("hiddenAuthorsReplacement"), result.hiddenAuthorsReplacement, error, path)
+		&& Codec::ReadField(object, QLatin1StringView("hiddenPlaceholder"), result.hiddenPlaceholder, error, path);
 }
 
 QJsonValue Write(const FilterRules &value) {
@@ -139,6 +154,11 @@ QJsonValue Write(const FilterRules &value) {
 	Codec::WriteField(object, QLatin1StringView("hiddenAuthors"), value.hiddenAuthors);
 	Codec::WriteField(object, QLatin1StringView("excludedPeers"), value.excludedPeers);
 	Codec::WriteField(object, QLatin1StringView("rules"), value.rules);
+	Codec::WriteField(object, QLatin1StringView("hideBlockedAction"), value.hideBlockedAction);
+	Codec::WriteField(object, QLatin1StringView("hiddenAuthorsAction"), value.hiddenAuthorsAction);
+	Codec::WriteField(object, QLatin1StringView("hideBlockedReplacement"), value.hideBlockedReplacement);
+	Codec::WriteField(object, QLatin1StringView("hiddenAuthorsReplacement"), value.hiddenAuthorsReplacement);
+	Codec::WriteField(object, QLatin1StringView("hiddenPlaceholder"), value.hiddenPlaceholder);
 	return object;
 }
 
@@ -179,6 +199,12 @@ bool Validate(
 			return false;
 		}
 	}
+	if (!((value.hideBlockedAction == QString::fromUtf8("") || value.hideBlockedAction == QString::fromUtf8("mask") || value.hideBlockedAction == QString::fromUtf8("replace") || value.hideBlockedAction == QString::fromUtf8("hide") || value.hideBlockedAction == QString::fromUtf8("remove")))) {
+		return Codec::Fail(error, Codec::Child(path, QLatin1StringView("hideBlockedAction")), QString::fromLatin1("violates the schema rules"));
+	}
+	if (!((value.hiddenAuthorsAction == QString::fromUtf8("") || value.hiddenAuthorsAction == QString::fromUtf8("mask") || value.hiddenAuthorsAction == QString::fromUtf8("replace") || value.hiddenAuthorsAction == QString::fromUtf8("hide") || value.hiddenAuthorsAction == QString::fromUtf8("remove")))) {
+		return Codec::Fail(error, Codec::Child(path, QLatin1StringView("hiddenAuthorsAction")), QString::fromLatin1("violates the schema rules"));
+	}
 	return true;
 }
 
@@ -190,7 +216,7 @@ std::optional<FilterRules> ParseFilterRules(
 	auto object = Codec::ParseObject(raw, out);
 	if (!object) {
 		return std::nullopt;
-	} else if (object->value(QLatin1StringView("version")) != QJsonValue(2)) {
+	} else if (object->value(QLatin1StringView("version")) != QJsonValue(4)) {
 		Codec::Fail(out, QString::fromLatin1("version"), QString::fromLatin1("unsupported version"));
 		return std::nullopt;
 	}
@@ -207,7 +233,7 @@ std::optional<FilterRules> ParseFilterRules(
 
 QByteArray SerializeFilterRules(const FilterRules &value) {
 	auto object = Write(value).toObject();
-	object.insert(QLatin1StringView("version"), 2);
+	object.insert(QLatin1StringView("version"), 4);
 	return Codec::Serialize(object);
 }
 

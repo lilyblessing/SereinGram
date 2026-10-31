@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "window/notifications_manager.h"
 #include "serein/hooks/interface/notifications.h"
 #include "serein/hooks/gen/privacy.h"
+#include "serein/hooks/filters/view.h"
 
 #include "base/options.h"
 #include "base/platform/base_platform_info.h"
@@ -386,7 +387,9 @@ System::SkipState System::computeSkipState(
 			&& notifyBy->blockStatus() == PeerData::BlockStatus::Unknown)) {
 		return withSilent(SkipState::Unknown);
 	} else if (!notifySettings->isMuted(notifyBy)
-		&& (messageType || !notifyBy->isBlocked())) {
+		&& (messageType
+			|| (!notifyBy->isBlocked()
+				&& !Serein::Hooks::Filters::HiddenPeer(notifyBy)))) {
 		return withSilent(SkipState::DontSkip);
 	} else {
 		return withSilent(

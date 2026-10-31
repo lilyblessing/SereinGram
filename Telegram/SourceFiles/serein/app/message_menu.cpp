@@ -61,6 +61,13 @@ void RegisterMessageMenu() {
 	AddItemAction(Menu::InsertMediaInfoAction);
 	AddItemAction(Messages::InsertReadingAction);
 	AddItemAction(Filters::InsertAuthorAction);
+	Menu::AddContributor([](const Menu::Context &context) {
+		Filters::InsertSelectionRuleAction(
+			context.menu,
+			context.item,
+			context.controller,
+			context.selectedText);
+	});
 	AddItemAction(HistoryFeature::InsertEditHistoryAction);
 	AddItemAction(HistoryFeature::InsertDeletedMessagesAction);
 	AddItemAction(HistoryFeature::InsertRestoredMediaAction);

@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/history_view_reply.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
+#include "serein/hooks/filters/view.h"
 #include "ui/chat/chat_style.h"
 #include "ui/effects/spoiler_mess.h"
 #include "ui/image/image.h"
@@ -178,7 +179,9 @@ void ReplyPillHeader::updateShownMessageText() {
 	_shownMessageText.setMarkedText(
 		st::messageTextStyle,
 		(quote.empty()
-			? _shownMessage->inReplyText()
+			? Serein::Hooks::Filters::ReplyText(
+				_shownMessage,
+				_shownMessage->inReplyText())
 			: quote),
 		Ui::DialogTextOptions(),
 		context);

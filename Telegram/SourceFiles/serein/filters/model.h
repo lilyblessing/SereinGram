@@ -17,11 +17,16 @@ namespace Serein::Filters {
 struct Result {
 	TextWithEntities text;
 	bool hidden = false;
+	bool removed = false;
+	bool substituted = false;
+	TextWithEntities substitution;
 	QString error;
+	QString placeholder;
 	int matches = 0;
 };
 
 [[nodiscard]] std::optional<FilterRules> ReadRules(const QByteArray &raw);
+[[nodiscard]] std::optional<FilterRules> CachedRules(const QByteArray &raw);
 [[nodiscard]] std::optional<std::vector<FilterRule>> ReadRuleList(
 	const QByteArray &raw);
 [[nodiscard]] QByteArray WriteRuleList(std::vector<FilterRule> rules);
@@ -37,5 +42,6 @@ struct Result {
 	const QString &searchable = QString(),
 	const std::vector<FilterRule> &shared = {},
 	const QString &topic = QString());
+[[nodiscard]] TextWithEntities DisplayText(const Result &result);
 
 } // namespace Serein::Filters

@@ -83,6 +83,7 @@ const style::icon *Icon(Menu::ActionId id) {
 	case Menu::ActionId::Screenshot: return &st::menuIconSaveImage;
 	case Menu::ActionId::Reading: return &st::menuIconTranslate;
 	case Menu::ActionId::FilterAuthor: return &st::menuIconBlock;
+	case Menu::ActionId::SelectionFilter: return &st::menuIconBlock;
 	case Menu::ActionId::EditHistory: return &st::menuIconEdit;
 	case Menu::ActionId::DeletedMessages: return &st::menuIconRestore;
 	case Menu::ActionId::RestoredMedia: return &st::menuIconPhoto;

@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_send_action.h"
 #include "serein/hooks/messages/content.h"
+#include "serein/hooks/filters/view.h"
 
 #include "data/data_user.h"
 #include "data/data_send_action.h"
@@ -59,6 +60,10 @@ bool SendActionPainter::updateNeedsAnimating(
 		not_null<UserData*> user,
 		const MTPSendMessageAction &action) {
 	using Type = Api::SendProgressType;
+	if (Serein::Hooks::Filters::HiddenPeer(user)) {
+		clear(user);
+		return false;
+	}
 	if (action.type() == mtpc_sendMessageCancelAction) {
 		clear(user);
 		return false;

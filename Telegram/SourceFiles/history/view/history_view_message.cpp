@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "serein/hooks/gen/interface.h"
 #include "serein/hooks/messages/reactions.h"
 #include "serein/hooks/messages/content.h"
+#include "serein/hooks/filters/view.h"
 
 #include "api/api_suggest_post.h"
 #include "api/api_transcribes.h"
@@ -2432,7 +2433,15 @@ void Message::paintCommentsButton(
 	} else {
 		auto &list = _comments->userpics;
 		const auto limit = HistoryMessageViews::kMaxRecentRepliers;
-		const auto count = std::min(int(views->recentRepliers.size()), limit);
+		auto visible = std::vector<PeerId>();
+		visible.reserve(views->recentRepliers.size());
+		for (const auto peerId : views->recentRepliers) {
+			const auto peer = history()->owner().peer(peerId);
+			if (!Serein::Hooks::Filters::HiddenPeer(peer)) {
+				visible.push_back(peerId);
+			}
+		}
+		const auto count = std::min(int(visible.size()), limit);
 		const auto single = st::historyCommentsUserpics.size;
 		const auto shift = st::historyCommentsUserpics.shift;
 		const auto regenerate = [&] {
@@ -2444,7 +2453,7 @@ void Message::paintCommentsButton(
 				const auto peer = entry.peer;
 				auto &view = entry.view;
 				const auto wasView = view.cloud.get();
-				if (views->recentRepliers[i] != peer->id
+				if (visible[i] != peer->id
 					|| peer->userpicUniqueKey(view) != entry.uniqueKey
 					|| view.cloud.get() != wasView) {
 					return true;
@@ -2454,7 +2463,7 @@ void Message::paintCommentsButton(
 		}();
 		if (regenerate) {
 			for (auto i = 0; i != count; ++i) {
-				const auto peerId = views->recentRepliers[i];
+				const auto peerId = visible[i];
 				if (i == list.size()) {
 					list.push_back(UserpicInRow{
 						history()->owner().peer(peerId)

@@ -101,7 +101,7 @@ QString Searchable(not_null<HistoryItem*> item) {
 	if (raw.isEmpty()) {
 		return { .text = source };
 	}
-	const auto config = ReadRules(raw);
+	const auto config = CachedRules(raw);
 	const auto shared = ForDevice().Get(kSubscribedRules);
 	const auto forwarded = item->Get<HistoryMessageForwarded>();
 	const auto sources = std::array<PeerData*, 3>{
@@ -190,13 +190,23 @@ QString Searchable(not_null<HistoryItem*> item) {
 	return { tr::lng_serein_message_hidden_locally(tr::now) };
 }
 
+} // namespace
+
 [[nodiscard]] TextWithEntities DisplayText(const Result &result) {
-	return result.hidden
+	if (!result.hidden) {
+		return result.text;
+	}
+	if (result.removed) {
+		return { u" "_q };
+	}
+	if (result.substituted) {
+		return result.substitution;
+	}
+	return result.placeholder.isEmpty()
 		? TextWithEntities{ tr::lng_serein_filter_hidden(tr::now) }
-		: result.text;
+		: TextWithEntities{ result.placeholder };
 }
 
-} // namespace
 } // namespace Serein::Filters
 
 namespace Serein::Hooks::Filters {
@@ -206,6 +216,13 @@ bool Hidden(HistoryItem *item) {
 		|| Serein::Filters::Project(
 			item,
 			item->translatedTextWithLocalEntities()).hidden);
+}
+
+bool Removed(HistoryItem *item) {
+	return item
+		&& Serein::Filters::Project(
+			item,
+			item->translatedTextWithLocalEntities()).removed;
 }
 
 TextWithEntities DisplayText(
@@ -221,24 +238,62 @@ TextWithEntities DisplayText(
 TextWithEntities ReplyText(
 		HistoryItem *quoted,
 		const TextWithEntities &text) {
-	if (quoted && Serein::Filters::HiddenLocally(quoted)) {
-		return Serein::Filters::HiddenLocallyText();
-	}
-	return Hidden(quoted)
-		? TextWithEntities{ tr::lng_serein_filter_hidden(tr::now) }
-		: text;
+	return DisplayText(quoted, text);
 }
 
 bool HiddenPeer(PeerData *peer) {
-	if (!peer || !peer->isBlocked()) {
+	if (!peer) {
 		return false;
 	}
 	const auto raw = ForAccount(&peer->session()).Get(
 		Serein::Filters::kRules);
 	const auto config = raw.isEmpty()
 		? std::nullopt
-		: Serein::Filters::ReadRules(raw);
-	return config && config->enabled && config->hideBlocked;
+		: Serein::Filters::CachedRules(raw);
+	if (!config || !config->enabled) {
+		return false;
+	}
+	if (peer->isBlocked() && config->hideBlocked) {
+		return true;
+	}
+	const auto id = QString::number(SerializePeerId(peer->id));
+	return std::find(
+		config->hiddenAuthors.begin(),
+		config->hiddenAuthors.end(),
+		id) != config->hiddenAuthors.end();
+}
+
+bool HiddenSender(HistoryItem *item) {
+	if (!item || item->isService()) {
+		return false;
+	}
+	const auto raw = ForAccount(&item->history()->session()).Get(
+		Serein::Filters::kRules);
+	const auto config = raw.isEmpty()
+		? std::nullopt
+		: Serein::Filters::CachedRules(raw);
+	if (!config || !config->enabled) {
+		return false;
+	}
+	const auto forwarded = item->Get<HistoryMessageForwarded>();
+	const auto sources = std::array<PeerData*, 3>{
+		item->from().get(),
+		forwarded ? forwarded->originalSender : nullptr,
+		item->viaBot(),
+	};
+	const auto contains = [&](const QString &id) {
+		return std::find(
+			config->hiddenAuthors.begin(),
+			config->hiddenAuthors.end(),
+			id) != config->hiddenAuthors.end();
+	};
+	for (const auto source : sources) {
+		if (source
+			&& contains(QString::number(SerializePeerId(source->id)))) {
+			return true;
+		}
+	}
+	return false;
 }
 
 } // namespace Serein::Hooks::Filters

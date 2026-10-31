@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "info/downloads/info_downloads_provider.h"
+#include "serein/hooks/filters/view.h"
 
 #include "info/media/info_media_widget.h"
 #include "info/media/info_media_list_section.h"
@@ -441,6 +442,9 @@ BaseLayout *Provider::getLayout(
 std::unique_ptr<BaseLayout> Provider::createLayout(
 		Element element,
 		not_null<Overview::Layout::Delegate*> delegate) {
+	if (Serein::Hooks::Filters::HiddenSender(element.item)) {
+		return nullptr;
+	}
 	const auto getFile = [&]() -> DocumentData* {
 		if (auto media = element.item->media()) {
 			return media->document();

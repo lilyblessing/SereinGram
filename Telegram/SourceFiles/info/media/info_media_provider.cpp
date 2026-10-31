@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "info/media/info_media_provider.h"
+#include "serein/hooks/filters/view.h"
 
 #include "apiwrap.h"
 #include "info/media/info_media_widget.h"
@@ -493,6 +494,9 @@ std::unique_ptr<BaseLayout> Provider::createLayout(
 	const auto item = _controller->session().data().message(
 		computeFullId(universalId));
 	if (!item) {
+		return nullptr;
+	}
+	if (Serein::Hooks::Filters::HiddenSender(item)) {
 		return nullptr;
 	}
 	const auto getPhoto = [&]() -> PhotoData* {

@@ -1,4 +1,5 @@
 #include "serein/schema/gen/history/record.h"
+#include "serein/schedule/model.h"
 #include "base/basic_types.h"
 #include "serein/tests/require.h"
 
@@ -58,4 +59,42 @@ TEST_CASE("Codec") {
 		"fractional numbers are not 32-bit integers");
 	Require(Rejects("[]", "$"), "documents must be JSON objects");
 	std::cout << "PASS: Serein schema codecs" << std::endl;
+}
+
+TEST_CASE("ScheduleConfig") {
+	using namespace Serein::Schedule;
+	const auto peer = quint64(777000);
+	auto config = DailySchedules();
+	for (const auto minute : { 0, 19 * 60 + 19, 1439 }) {
+		const auto saved = WithEntry(config, peer, minute, u"ping"_q);
+		Require(saved.has_value(), "entry with a valid minute rejected");
+		config = *saved;
+		const auto raw = SerializeConfig(config);
+		Require(!raw.isEmpty(), "serialized schedule config is empty");
+		const auto parsed = ReadConfig(raw);
+		Require(parsed.has_value(), "schedule config failed to parse back");
+		Require(*parsed == config, "schedule config did not round trip");
+		Require(parsed->entries.size() == 1, "round trip changed entry count");
+		Require(parsed->entries[0].minuteOfDay == minute,
+			"minuteOfDay corrupted in round trip");
+		Require(parsed->entries[0].peer == QString::number(peer),
+			"peer id corrupted in round trip");
+		Require(parsed->entries[0].text == u"ping"_q,
+			"text corrupted in round trip");
+		Require(!parsed->entries[0].serverScheduled,
+			"serverScheduled appeared from nowhere");
+	}
+	const auto marked = MarkSent(config, peer, u"2026-10-14"_q);
+	Require(marked.has_value(), "MarkSent rejected an existing entry");
+	const auto markedParsed = ReadConfig(SerializeConfig(*marked));
+	Require(markedParsed.has_value() && *markedParsed == *marked
+			&& markedParsed->entries[0].lastSentDate == u"2026-10-14"_q,
+		"lastSentDate did not round trip");
+	const auto scheduled = SetServerScheduled(*marked, peer, true);
+	Require(scheduled.has_value(), "SetServerScheduled rejected an existing entry");
+	const auto scheduledParsed = ReadConfig(SerializeConfig(*scheduled));
+	Require(scheduledParsed.has_value() && *scheduledParsed == *scheduled
+			&& scheduledParsed->entries[0].serverScheduled,
+		"serverScheduled did not round trip");
+	std::cout << "PASS: Serein schedule config round trip" << std::endl;
 }
