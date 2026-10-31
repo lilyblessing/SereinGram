@@ -175,13 +175,14 @@ void ReplyPillHeader::updateShownMessageText() {
 		.session = &_data->session(),
 		.repaint = [=] { customEmojiRepaint(); },
 	});
+	const auto &quote = HistoryView::Reply::ComposePreviewQuote(_replyTo);
 	_shownMessageText.setMarkedText(
 		st::messageTextStyle,
-		(_replyTo.quote.empty()
+		(quote.empty()
 			? Serein::Hooks::Filters::ReplyText(
 				_shownMessage,
 				_shownMessage->inReplyText())
-			: _replyTo.quote),
+			: quote),
 		Ui::DialogTextOptions(),
 		context);
 }
@@ -267,7 +268,7 @@ void ReplyPillHeader::paintEvent(QPaintEvent *e) {
 
 	const auto iconPos = st::sendFilesReplyIconPosition
 		+ QPoint(pillRect.left(), pillRect.top());
-	if (!_replyTo.quote.empty()) {
+	if (!HistoryView::Reply::ComposePreviewQuote(_replyTo).empty()) {
 		st::historyQuoteIcon.paint(p, iconPos, width());
 	} else {
 		st::historyReplyIcon.paint(p, iconPos, width());
